@@ -77,3 +77,12 @@ export function formatTimeSpan(afgang: string | null, ankomst: string | null): s
 export function nightsLabel(antal: number): string {
   return antal === 1 ? '1 nat' : `${antal} nætter`;
 }
+
+// Kalenderflise: "tor" / "31" / "dec".
+const UGEDAG_KORT = ['søn', 'man', 'tir', 'ons', 'tor', 'fre', 'lør'];
+const MAANED_KORT = ['jan', 'feb', 'mar', 'apr', 'maj', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
+
+export function kalenderFlise(dato: string): { ugedag: string; dag: number; maaned: string } {
+  const [, m, d] = dato.split('-').map(Number);
+  return { ugedag: UGEDAG_KORT[new Date(tilMs(dato)).getUTCDay()], dag: d, maaned: MAANED_KORT[m - 1] };
+}

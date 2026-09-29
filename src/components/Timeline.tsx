@@ -23,6 +23,7 @@ export function Timeline({
   activities,
   aktivDestinationId,
   onVaelg,
+  kanRedigere,
 }: {
   destinations: Destination[];
   stays: Stay[];
@@ -30,6 +31,7 @@ export function Timeline({
   activities: Activity[];
   aktivDestinationId: string | null;
   onVaelg: (destinationId: string) => void;
+  kanRedigere: boolean;
 }) {
   const axis = useMemo(() => makeAxis(), []);
   const dage = useMemo(() => tripDays(), []);
@@ -123,23 +125,34 @@ export function Timeline({
         </div>
 
         <div className="tl-transport" style={{ height: `${antalBaner * 1.5}rem` }}>
-          {transportEtiketter.map(({ t, pct, bane }) => (
-            <Link
-              key={t.id}
-              href={`/transport/${t.id}`}
-              className="tl-t num"
-              style={{
+          {transportEtiketter.map(({ t, pct, bane }) => {
+            const egenskaber = {
+              className: 'tl-t num',
+              style: {
                 left: `${pct}%`,
                 top: `${bane * 1.5}rem`,
                 transform: pct < 4 ? 'translateX(-0.4rem)' : pct > 96 ? 'translateX(calc(-100% + 0.4rem))' : undefined,
-              }}
-              title={`${t.kind}: ${t.from_place} → ${t.to_place}${t.carrier_and_number ? ` · ${t.carrier_and_number}` : ''}${t.departs_at ? ` · ${formatTime(t.departs_at)}` : ''}`}
-              aria-label={`${t.kind} ${t.from_place} til ${t.to_place}`}
-            >
-              <TransportIcon kind={t.kind} />
-              {[formatTime(t.departs_at), flynummer(t)].filter(Boolean).join(' ')}
-            </Link>
-          ))}
+              },
+              title: `${t.kind}: ${t.from_place} → ${t.to_place}${t.carrier_and_number ? ` · ${t.carrier_and_number}` : ''}${t.departs_at ? ` · ${formatTime(t.departs_at)}` : ''}`,
+              'aria-label': `${t.kind} ${t.from_place} til ${t.to_place}`,
+            };
+            const indhold = (
+              <>
+                <TransportIcon kind={t.kind} />
+                {[formatTime(t.departs_at), flynummer(t)].filter(Boolean).join(' ')}
+              </>
+            );
+            // Etiketten linker til redigeringen — kun for redaktører. Læsere ser samme etiket uden link.
+            return kanRedigere ? (
+              <Link key={t.id} href={`/transport/${t.id}`} {...egenskaber}>
+                {indhold}
+              </Link>
+            ) : (
+              <span key={t.id} {...egenskaber}>
+                {indhold}
+              </span>
+            );
+          })}
         </div>
 
         {nu !== null ? (

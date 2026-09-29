@@ -1,10 +1,12 @@
 import Link from 'next/link';
 import { Topbar } from '@/components/Topbar';
+import { kraevRedaktoer } from '@/lib/adgang';
 import { AktivitetForm } from '@/components/forms/AktivitetForm';
 import { hentTrip } from '@/lib/data';
 
-export default async function NyAktivitet({ searchParams }: { searchParams: Promise<{ destination?: string }> }) {
-  const { destination } = await searchParams;
+export default async function NyAktivitet({ searchParams }: { searchParams: Promise<{ destination?: string; dato?: string }> }) {
+  await kraevRedaktoer();
+  const { destination, dato } = await searchParams;
   const { data, fejl } = await hentTrip();
   return (
     <>
@@ -17,7 +19,9 @@ export default async function NyAktivitet({ searchParams }: { searchParams: Prom
         {fejl !== null ? (
           <p className="fejl">{fejl}</p>
         ) : (
-          <AktivitetForm destinations={data.destinations} stays={data.stays} forvalgtDestinationId={destination} />
+          <AktivitetForm destinations={data.destinations} stays={data.stays} forvalgtDestinationId={destination}
+            forvalgtDato={dato && /^\d{4}-\d{2}-\d{2}$/.test(dato) ? dato : undefined}
+          />
         )}
       </main>
     </>

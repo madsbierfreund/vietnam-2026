@@ -1,9 +1,11 @@
 import Link from 'next/link';
 import { Topbar } from '@/components/Topbar';
+import { kraevRedaktoer } from '@/lib/adgang';
 import { HotelForm } from '@/components/forms/HotelForm';
 import { hentTrip } from '@/lib/data';
 
 export default async function NytHotel() {
+  await kraevRedaktoer();
   const { data, fejl } = await hentTrip();
   return (
     <>

@@ -11,6 +11,49 @@ Format pr. post:
 ═══════════════════════════════════════════════════════════════════
 ## 2026-09-29
 
+### Dage under hvert hotel (kalenderfliser)
+- **Hvad:** Under hvert hotel i oversigtens destinationsliste vises opholdets dage som kalenderfliser ("tor / 31 / dec").
+  `stayDays`: fra check-in til og med dagen før check-ud. Rejsens sidste ophold (senest check-ud, i dag Ke Ga) får
+  også check-ud-dagen (11. jan.), da ingen andre ophold dækker den. Hver dag viser aktiviteterne med den dato
+  (`activitiesForDay`: morgen, formiddag, eftermiddag, aften, derefter uden tid; ens tid alfabetisk). Hver dag har en
+  "+ Aktivitet"-knap, der åbner formularen med destination og dato forvalgt (`?destination=…&dato=…`). En tom dag
+  viser kun flisen og knappen. "Ønsker" er bevaret under dagene; oversigtens "Planlagt"-liste er fjernet. Mobil: én
+  dag pr. række med aktiviteterne til højre for flisen. Desktop: gitter.
+- **Valg:** En dag viser ALLE aktiviteter med den dato, ikke kun destinationens egne. Destinationens datointerval
+  inkluderer check-ud-dagen, så fx en Saigon-aktivitet 27. dec. ville ellers forsvinde, fordi 27. dec. er Hanois flise.
+- **Uændret:** tidslinjen og kortet. Hotelsiden beholder sine Planlagt/Ønsker-lister (ændringen gjaldt oversigten).
+
+### Roller: redaktør og læser
+- **Hvad:** Migration `20260929130000_roller.sql` (IKKE kørt). Den tilføjer `profiles` (user_id, email, role
+  'redaktør' | 'læser', default 'læser') og en trigger på `auth.users`, der giver nye brugere en profil som læser.
+  Mads og Marie bliver redaktør, øvrige eksisterende brugere læser; mangler en af de to e-mails, kommer der en notice
+  uden fejl. Den tilføjer også `kan_redigere()` (security definer, `search_path = ''`, false når profilen mangler)
+  og ny RLS: alle indloggede må læse de fire tabeller, men insert/update/delete kræver `kan_redigere()`. På
+  `profiles` må man kun læse sin egen række, og insert/update/delete er både uden politik og revoked for
+  anon/authenticated. Roller ændres kun i Table Editor.
+- **App:** `hentAdgang()` læser egen profil (manglende række eller fejl = læser, og fejlen vises med årsag). Topbar,
+  oversigt, tidslinje, "Mangler placering", hotel- og aktivitetssider skjuler tilføj/ret/slet/Søg placering for
+  læsere. Tidslinjens transport-etiketter linker til redigeringen; for læsere er de samme etiketter uden link. Alle
+  ny/ret-sider sender læsere til `/`. Hver server action tjekker rollen og returnerer "du har kun læseadgang".
+- **RLS afviser uden fejl:** en blokeret update/delete ændrer bare 0 rækker. Slet-handlingerne, transport-update,
+  hotel/aktivitet-update og "sæt placering" tjekker nu antallet af ændrede rækker og viser en fejl i stedet for at
+  lade det ligne succes.
+- **Forkastet (efter afklaring):** en admin-rolle med brugeradministration i appen og brug af service role-nøglen.
+  Brugere oprettes og roller sættes i Supabase-dashboardet, så appen skal aldrig kende nøglen.
+- **Verificeret:** i en midlertidig Postgres 16 med init + seed.sql + rolle-migrationen. Mads (e-mail med store
+  bogstaver) blev redaktør og gæsten læser; notice for manglende Marie, og nye brugere får læser via triggeren.
+  - Læser og bruger uden profil: `kan_redigere()` = false; insert afvist af RLS; update/delete ændrer 0 rækker;
+    ændring af profiles giver "permission denied".
+  - Redaktør: insert/update/delete virker, men egen rolle kan ikke ændres. Anon: 0 rækker og ingen adgang til
+    `kan_redigere()`.
+  - Appen i Chromium som redaktør og som læser: fliser pr. hotel 1/3/7/6 (lør 26 dec … man 11 jan), 31. dec. sorteret
+    morgen → aften → uden tid, ingen "Planlagt". Dag-knappen forvælger destination og dato.
+  - Læseren så ingen redigeringsknapper, blev sendt til `/` fra alle seks ny/ret-sider og fik "du har kun
+    læseadgang", da en server action blev kaldt med læserens session (databasen var uændret).
+- **Teknisk lærdom:** min lokale stub af `auth.uid()` læste kun `request.jwt.claim.sub`. PostgREST 12 sætter
+  `request.jwt.claims` (JSON), så redaktøren så læser-UI. Appen fejlede altså korrekt lukket. Supabase' egen
+  `auth.uid()` læser begge, så det var kun et testopsætnings-problem.
+
 ### Priser fjernet fra appen
 - **Hvad:** Appen viser og redigerer ikke længere priser. Fjernet: den samlede pris nederst på oversigten (inkl.
   "poster uden pris"), pris og prisnote på hotelkort, hotelside, aktivitetsliste og aktivitetsside, og felterne

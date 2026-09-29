@@ -1,8 +1,10 @@
 import Link from 'next/link';
 import { Topbar } from '@/components/Topbar';
+import { kraevRedaktoer } from '@/lib/adgang';
 import { TransportForm } from '@/components/forms/TransportForm';
 
-export default function NyTransport() {
+export default async function NyTransport() {
+  await kraevRedaktoer();
   return (
     <>
       <Topbar aktiv="transport" />

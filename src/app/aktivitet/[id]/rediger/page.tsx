@@ -1,10 +1,12 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Topbar } from '@/components/Topbar';
+import { kraevRedaktoer } from '@/lib/adgang';
 import { AktivitetForm } from '@/components/forms/AktivitetForm';
 import { hentTrip } from '@/lib/data';
 
 export default async function RedigerAktivitet({ params }: { params: Promise<{ id: string }> }) {
+  await kraevRedaktoer();
   const { id } = await params;
   const { data, fejl } = await hentTrip();
   const activity = data?.activities.find((a) => a.id === id);

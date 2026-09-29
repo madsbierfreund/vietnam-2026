@@ -6,12 +6,13 @@ import { SletKnap } from '@/components/SletKnap';
 import { MiniMap } from '@/components/maps/MiniMap';
 import { sletHotel } from '@/app/actions';
 import { hentTrip } from '@/lib/data';
+import { hentAdgang } from '@/lib/adgang';
 import { formatDate, formatDateRange, nights, nightsLabel } from '@/lib/trip/dates';
 import { splitActivities } from '@/lib/trip/activities';
 
 export default async function HotelSide({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { data, fejl } = await hentTrip();
+  const [{ data, fejl }, { kanRedigere }] = await Promise.all([hentTrip(), hentAdgang()]);
   if (fejl !== null) {
     return (
       <>
@@ -83,12 +84,14 @@ export default async function HotelSide({ params }: { params: Promise<{ id: stri
           </dd>
         </dl>
 
-        <div className="btn-row">
-          <Link href={`/hotel/${stay.id}/rediger`} className="btn">
-            Ret
-          </Link>
-          <SletKnap handling={slet} hvad={`hotellet "${stay.name}"`} />
-        </div>
+        {kanRedigere ? (
+          <div className="btn-row">
+            <Link href={`/hotel/${stay.id}/rediger`} className="btn">
+              Ret
+            </Link>
+            <SletKnap handling={slet} hvad={`hotellet "${stay.name}"`} />
+          </div>
+        ) : null}
 
         <section className="destination">
           <h2>Aktiviteter i {destination?.name}</h2>
@@ -122,11 +125,13 @@ export default async function HotelSide({ params }: { params: Promise<{ id: stri
               ))}
             </ul>
           </div>
-          <div>
-            <Link href={`/aktivitet/ny?destination=${stay.destination_id}`} className="btn btn-small">
-              + Aktivitet i {destination?.name}
-            </Link>
-          </div>
+          {kanRedigere ? (
+            <div>
+              <Link href={`/aktivitet/ny?destination=${stay.destination_id}`} className="btn btn-small">
+                + Aktivitet i {destination?.name}
+              </Link>
+            </div>
+          ) : null}
         </section>
       </main>
     </>

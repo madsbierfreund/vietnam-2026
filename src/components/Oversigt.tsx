@@ -9,7 +9,7 @@ import { DestinationSection } from './DestinationSection';
 import { ManglerPlacering, type UdenPlacering } from './ManglerPlacering';
 
 // Hele rejsen på én side: tidslinje, kort (sticky på desktop) og destinationslisten.
-export function Oversigt({ trip }: { trip: Trip }) {
+export function Oversigt({ trip, kanRedigere }: { trip: Trip; kanRedigere: boolean }) {
   const { destinations, stays, transport, activities } = trip;
   const [fokus, setFokus] = useState<Fokus>(null);
 
@@ -42,6 +42,7 @@ export function Oversigt({ trip }: { trip: Trip }) {
         activities={activities}
         aktivDestinationId={fokus?.destinationId ?? null}
         onVaelg={vaelg}
+        kanRedigere={kanRedigere}
       />
       <div className="frame oversigt">
         <div className="kort-kolonne">
@@ -54,7 +55,7 @@ export function Oversigt({ trip }: { trip: Trip }) {
               fokus={fokus}
             />
           </div>
-          <ManglerPlacering poster={udenPlacering} />
+          <ManglerPlacering poster={udenPlacering} kanRedigere={kanRedigere} />
         </div>
 
         <div className="liste">
@@ -64,6 +65,9 @@ export function Oversigt({ trip }: { trip: Trip }) {
               destination={d}
               stays={stays.filter((s) => s.destination_id === d.id)}
               activities={activities.filter((a) => a.destination_id === d.id)}
+              alleStays={stays}
+              alleAktiviteter={activities}
+              kanRedigere={kanRedigere}
             />
           ))}
         </div>

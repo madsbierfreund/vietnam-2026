@@ -1,10 +1,12 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Topbar } from '@/components/Topbar';
+import { kraevRedaktoer } from '@/lib/adgang';
 import { HotelForm } from '@/components/forms/HotelForm';
 import { hentTrip } from '@/lib/data';
 
 export default async function RedigerHotel({ params }: { params: Promise<{ id: string }> }) {
+  await kraevRedaktoer();
   const { id } = await params;
   const { data, fejl } = await hentTrip();
   const stay = data?.stays.find((s) => s.id === id);

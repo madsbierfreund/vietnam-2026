@@ -188,6 +188,22 @@ p { margin: 0; }
 .stay-kort a.titel:hover { text-decoration: underline; }
 .linje { display: flex; flex-wrap: wrap; gap: 0.2rem var(--sp-3); align-items: baseline; }
 
+/* Dagene under et hotel: kalenderflise + dagens aktiviteter. Mobil: én dag pr. række. */
+.stay-med-dage { display: flex; flex-direction: column; gap: var(--sp-2); }
+.dage { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr; gap: var(--sp-2); }
+.dag { display: flex; gap: var(--sp-3); align-items: flex-start; padding: var(--sp-2) 0; border-bottom: 1px solid var(--border); }
+.kalender {
+  flex: none; width: 3.25rem; display: flex; flex-direction: column; align-items: center;
+  border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--surface);
+  padding: 0.2rem 0 0.25rem; line-height: 1.1;
+}
+.kal-ugedag, .kal-maaned { font-size: var(--fs-13); color: var(--muted); }
+.kal-dag { font-family: var(--font-serif); font-size: var(--fs-28); font-weight: 600; line-height: 1.05; }
+.dag-indhold { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--sp-2); }
+.dag-aktiviteter { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.2rem; }
+.dag-aktiviteter a { color: var(--text); text-decoration: none; }
+.dag-aktiviteter a:hover { text-decoration: underline; }
+
 .akt-gruppe h3 { font-family: var(--font-sans); font-size: var(--fs-13); color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: var(--sp-1); }
 .akt-liste { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--border); }
 .akt-liste li { border-bottom: 1px solid var(--border); }
@@ -269,6 +285,7 @@ p { margin: 0; }
     height: calc(100vh - var(--bar-h) - 2 * var(--sp-4));
   }
   .kortflade { height: auto; flex: 1; min-height: 20rem; }
+  .dage { grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr)); }
   .mangler { max-height: 35%; overflow-y: auto; flex: none; }
   .detalje-kort { height: 18rem; }
 }

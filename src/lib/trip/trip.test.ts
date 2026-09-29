@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { TRIP_END, TRIP_START, formatTimeSpan, nights, stayForNight, tripDays } from './dates';
+import { TRIP_END, TRIP_START, formatTimeSpan, kalenderFlise, nights, stayForNight, tripDays } from './dates';
 import { assignLanes, blockLayout, makeAxis, positionPct, todayPct } from './timeline';
 import { nearestDestinationId } from './geo';
 import { routeLegs } from './route';
-import { destinationPeriod, splitActivities } from './activities';
+import { activitiesForDay, destinationPeriod, splitActivities, stayDays } from './activities';
 
 // Den aktuelle plan (samme datoer som seed-scriptet).
 const STAYS = [
@@ -122,6 +122,48 @@ describe('aktiviteter', () => {
   it('datoen begrænses til destinationens opholdsperiode', () => {
     expect(destinationPeriod('ninhvan', STAYS)).toEqual({ min: '2026-12-30', max: '2027-01-06' });
     expect(destinationPeriod('ukendt', STAYS)).toBeNull();
+  });
+});
+
+describe('dagene under et hotel', () => {
+  it('fra check-in til og med dagen før check-ud', () => {
+    expect(stayDays(STAYS[0], STAYS)).toEqual(['2026-12-26']);
+    expect(stayDays(STAYS[1], STAYS)).toEqual(['2026-12-27', '2026-12-28', '2026-12-29']);
+    expect(stayDays(STAYS[2], STAYS)).toEqual([
+      '2026-12-30', '2026-12-31', '2027-01-01', '2027-01-02', '2027-01-03', '2027-01-04', '2027-01-05',
+    ]);
+  });
+  it('kalenderflisen viser kort ugedag, dagnummer og kort måned', () => {
+    expect(kalenderFlise('2026-12-31')).toEqual({ ugedag: 'tor', dag: 31, maaned: 'dec' });
+    expect(kalenderFlise('2027-01-11')).toEqual({ ugedag: 'man', dag: 11, maaned: 'jan' });
+  });
+  it('rejsens sidste ophold (Ke Ga) får også check-ud-dagen 11. jan.', () => {
+    expect(stayDays(STAYS[3], STAYS)).toEqual(['2027-01-06', '2027-01-07', '2027-01-08', '2027-01-09', '2027-01-10', '2027-01-11']);
+  });
+  it('alle dage 26. dec. – 11. jan. dækkes præcis én gang', () => {
+    const alle = STAYS.flatMap((s) => stayDays(s, STAYS));
+    expect(alle).toHaveLength(17);
+    expect(new Set(alle).size).toBe(17);
+    expect(alle).toEqual(tripDays().slice(0, 17));
+  });
+});
+
+describe('en dags aktiviteter', () => {
+  it('sorteres morgen, formiddag, eftermiddag, aften, derefter uden tid; kun den dags', () => {
+    const dag = activitiesForDay(
+      [
+        { title: 'Uden tid', date: '2026-12-31', time_of_day: null },
+        { title: 'Nytår', date: '2026-12-31', time_of_day: 'aften' as const },
+        { title: 'Kajak', date: '2026-12-31', time_of_day: 'formiddag' as const },
+        { title: 'Snorkel', date: '2026-12-31', time_of_day: 'morgen' as const },
+        { title: 'Spa', date: '2026-12-31', time_of_day: 'eftermiddag' as const },
+        { title: 'Anden dag', date: '2027-01-01', time_of_day: 'morgen' as const },
+        { title: 'Ønske', date: null, time_of_day: null },
+        { title: 'Bad', date: '2026-12-31', time_of_day: 'formiddag' as const },
+      ],
+      '2026-12-31',
+    );
+    expect(dag.map((a) => a.title)).toEqual(['Snorkel', 'Bad', 'Kajak', 'Spa', 'Nytår', 'Uden tid']);
   });
 });
 

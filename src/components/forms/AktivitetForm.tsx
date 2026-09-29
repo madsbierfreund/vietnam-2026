@@ -18,16 +18,18 @@ export function AktivitetForm({
   stays,
   activity,
   forvalgtDestinationId,
+  forvalgtDato,
 }: {
   destinations: Destination[];
   stays: Stay[];
   activity?: Activity;
   forvalgtDestinationId?: string;
+  forvalgtDato?: string;
 }) {
   const { fejl, gemmer, onSubmit } = useFormular(gemAktivitet);
   const [destinationId, setDestinationId] = useState(activity?.destination_id ?? forvalgtDestinationId ?? '');
   const [titel, setTitel] = useState(activity?.title ?? '');
-  const [dato, setDato] = useState(activity?.date ?? '');
+  const [dato, setDato] = useState(activity?.date ?? forvalgtDato ?? '');
   const [forvalgtBesked, setForvalgtBesked] = useState<string | null>(null);
 
   const periode = destinationId ? destinationPeriod(destinationId, stays) : null;

@@ -8,23 +8,23 @@ import { PlaceSearch } from './maps/PlaceSearch';
 
 export type UdenPlacering = { tabel: 'stays' | 'activities'; id: string; navn: string; type: string };
 
-// Listen under kortet: hoteller og aktiviteter uden placering, hver med en knap
-// der åbner stedsøgningen. Valget gemmes med det samme.
-export function ManglerPlacering({ poster }: { poster: UdenPlacering[] }) {
+// Listen under kortet: hoteller og aktiviteter uden placering. Redaktører får en knap
+// der åbner stedsøgningen (valget gemmes med det samme); læsere ser kun listen.
+export function ManglerPlacering({ poster, kanRedigere }: { poster: UdenPlacering[]; kanRedigere: boolean }) {
   if (poster.length === 0) return null;
   return (
     <section className="mangler" aria-label="Mangler placering">
       <h3>Mangler placering</h3>
       <ul>
         {poster.map((p) => (
-          <Post key={`${p.tabel}-${p.id}`} post={p} />
+          <Post key={`${p.tabel}-${p.id}`} post={p} kanRedigere={kanRedigere} />
         ))}
       </ul>
     </section>
   );
 }
 
-function Post({ post }: { post: UdenPlacering }) {
+function Post({ post, kanRedigere }: { post: UdenPlacering; kanRedigere: boolean }) {
   const router = useRouter();
   const [aaben, setAaben] = useState(false);
   const [gemmer, setGemmer] = useState(false);
@@ -54,11 +54,13 @@ function Post({ post }: { post: UdenPlacering }) {
         <span>
           {post.navn} <span className="muted small">· {post.type}</span>
         </span>
-        <button type="button" className="btn btn-small" onClick={() => setAaben((v) => !v)} disabled={gemmer}>
-          {aaben ? 'Luk' : 'Søg placering'}
-        </button>
+        {kanRedigere ? (
+          <button type="button" className="btn btn-small" onClick={() => setAaben((v) => !v)} disabled={gemmer}>
+            {aaben ? 'Luk' : 'Søg placering'}
+          </button>
+        ) : null}
       </div>
-      {aaben ? <PlaceSearch onPick={gem} autoFocus placeholder={`Søg efter ${post.navn}`} /> : null}
+      {aaben && kanRedigere ? <PlaceSearch onPick={gem} autoFocus placeholder={`Søg efter ${post.navn}`} /> : null}
       {gemmer ? <p className="muted small">Gemmer …</p> : null}
       {fejl ? <p className="fejl">{fejl}</p> : null}
     </li>

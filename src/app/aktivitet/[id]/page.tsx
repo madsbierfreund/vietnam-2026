@@ -5,11 +5,12 @@ import { SletKnap } from '@/components/SletKnap';
 import { MiniMap } from '@/components/maps/MiniMap';
 import { sletAktivitet } from '@/app/actions';
 import { hentTrip } from '@/lib/data';
+import { hentAdgang } from '@/lib/adgang';
 import { formatDate } from '@/lib/trip/dates';
 
 export default async function AktivitetSide({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { data, fejl } = await hentTrip();
+  const [{ data, fejl }, { kanRedigere }] = await Promise.all([hentTrip(), hentAdgang()]);
   if (fejl !== null) {
     return (
       <>
@@ -68,12 +69,14 @@ export default async function AktivitetSide({ params }: { params: Promise<{ id: 
           </a>
         ) : null}
 
-        <div className="btn-row">
-          <Link href={`/aktivitet/${a.id}/rediger`} className="btn">
-            Ret
-          </Link>
-          <SletKnap handling={slet} hvad={`aktiviteten "${a.title}"`} />
-        </div>
+        {kanRedigere ? (
+          <div className="btn-row">
+            <Link href={`/aktivitet/${a.id}/rediger`} className="btn">
+              Ret
+            </Link>
+            <SletKnap handling={slet} hvad={`aktiviteten "${a.title}"`} />
+          </div>
+        ) : null}
       </main>
     </>
   );

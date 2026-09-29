@@ -15,9 +15,11 @@ brugere (Mads og Marie); alt er delt, og alle kan læse, tilføje, rette og slet
 ## Struktur
 
 - `supabase/migrations/20260929120000_init.sql` — hele skemaet: `destinations`, `stays`, `transport`, `activities` + RLS
+- `supabase/migrations/20260929130000_roller.sql` — roller: `profiles`, `kan_redigere()`, trigger for nye brugere, RLS hvor kun redaktører må skrive
 - `supabase/seed.sql` — idempotent seed af den nuværende plan til Supabase SQL Editor (den primære vej)
 - `scripts/seed.ts` — samme seed som script (`npm run seed`), til hvis man kører lokalt. `src/lib/seed.test.ts` sikrer, at de to indeholder de samme hoteller, transporter og aktiviteter
 - `src/proxy.ts`, `src/lib/supabase/*` — session og login-beskyttelse (alt undtagen `/login` kræver login)
+- `src/lib/rolle.ts`, `src/lib/adgang.ts` — roller (redaktør/læser) og opslag af den indloggede brugers rolle
 - `src/lib/trip/*` — ren logik uden UI: datoer og nætter, tidslinjens geometri, nærmeste destination, ruten, aktivitetslister (testet i `trip.test.ts`)
 - `src/lib/data.ts` — hentning i server-komponenter; fejl vises med Supabase' egen årsag
 - `src/app/actions.ts` — alle skrivninger (server actions)
@@ -28,7 +30,7 @@ brugere (Mads og Marie); alt er delt, og alle kan læse, tilføje, rette og slet
 ## Opsætning
 
 Alt kan gøres i browseren: Supabase-dashboardet, Google Cloud Console og Vercel. Intet skal køres lokalt.
-Rækkefølgen i trin 2–4 er vigtig: **migration → brugere → seed**.
+Rækkefølgen i trin 2–4b er vigtig: **migration → brugere → seed → rolle-migration**.
 
 ### 1. Supabase-projekt
 
@@ -54,6 +56,14 @@ Den opretter tabellerne og adgangsreglerne. Den må kun køres én gang (en ny k
 - Til sidst kontrollerer den, at hele planen findes, og skriver "Seed færdig …". Står der `relation "public.destinations" does not exist`, er migrationen (trin 2) ikke kørt.
 
 *Alternativ for den, der kører lokalt:* `npm run seed` (`scripts/seed.ts`) indsætter præcis de samme data. Det kræver `NEXT_PUBLIC_SUPABASE_URL` og `SUPABASE_SERVICE_ROLE_KEY` i `.env.local`.
+
+### 4b. Kør rolle-migrationen (én gang)
+
+Åbn **SQL Editor → New query**, kopiér HELE indholdet af `supabase/migrations/20260929130000_roller.sql` ind, og tryk **Run**.
+
+- Den opretter `profiles` og giver eksisterende brugere en rolle: `madsbierfreund@gmail.com` og `marie.vedsted@gmail.com` bliver **redaktør**, alle andre **læser**.
+- Findes en af de to e-mails ikke endnu, skriver den en notice med e-mailen, men fejler ikke. Opret så brugeren og sæt rollen til `redaktør` i Table Editor (se "Brugere og roller" nedenfor).
+- Herefter må kun redaktører oprette, rette og slette. Alle indloggede kan se alt.
 
 ### 5. Google Cloud
 
@@ -97,6 +107,19 @@ npm run lint
 npm run typecheck
 npm run build
 ```
+
+## Brugere og roller
+
+Der er ingen brugeradministration i appen. Alt gøres i Supabase-dashboardet.
+
+- **redaktør** kan oprette, rette og slette alt.
+- **læser** kan se alt: oversigt, tidslinje, kort, hotel- og aktivitetssider. Læsere ser ingen knapper til at tilføje, rette, slette eller søge placering, og ny/ret-siderne sender dem til oversigten.
+
+**Tilføj en bruger:** **Authentication → Users → Add user → Create new user**. Indtast e-mail og adgangskode, og sæt flueben i **Auto Confirm User**. Brugeren får automatisk en række i `profiles` med rollen `læser`.
+
+**Skift en rolle:** **Table Editor → profiles**. Find brugerens række, dobbeltklik på feltet `role`, skriv `redaktør` eller `læser`, og gem. Ændringen gælder fra brugerens næste sidevisning. Andre værdier afvises af databasen.
+
+En bruger uden række i `profiles` behandles som læser. Rollen håndhæves i appen og til sidst af databasens RLS (`kan_redigere()`).
 
 ## Placeringer
 
