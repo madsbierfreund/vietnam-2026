@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { gemAktivitet } from '@/app/actions';
 import { TIDER_PAA_DAGEN, type Activity, type Destination, type Stay } from '@/lib/types';
-import { destinationPeriod } from '@/lib/trip/activities';
+import { aktivitetsPeriode } from '@/lib/trip/activities';
 import { formatDate } from '@/lib/trip/dates';
 import { nearestDestinationId } from '@/lib/trip/geo';
 import { MapsProvider } from '../maps/MapsProvider';
@@ -19,12 +19,14 @@ export function AktivitetForm({
   activity,
   forvalgtDestinationId,
   forvalgtDato,
+  foersteDag,
 }: {
   destinations: Destination[];
   stays: Stay[];
   activity?: Activity;
   forvalgtDestinationId?: string;
   forvalgtDato?: string;
+  foersteDag: string | null;
 }) {
   const { fejl, gemmer, onSubmit } = useFormular(gemAktivitet);
   const [destinationId, setDestinationId] = useState(activity?.destination_id ?? forvalgtDestinationId ?? '');
@@ -32,12 +34,12 @@ export function AktivitetForm({
   const [dato, setDato] = useState(activity?.date ?? forvalgtDato ?? '');
   const [forvalgtBesked, setForvalgtBesked] = useState<string | null>(null);
 
-  const periode = destinationId ? destinationPeriod(destinationId, stays) : null;
+  const periode = destinationId ? aktivitetsPeriode(destinationId, stays, foersteDag) : null;
   const datoUdenfor = dato !== '' && periode !== null && (dato < periode.min || dato > periode.max);
 
   function skiftDestination(id: string) {
     setDestinationId(id);
-    const p = destinationPeriod(id, stays);
+    const p = aktivitetsPeriode(id, stays, foersteDag);
     if (dato && (!p || dato < p.min || dato > p.max)) setDato('');
   }
 
@@ -102,7 +104,7 @@ export function AktivitetForm({
               {periode
                 ? `Mellem ${formatDate(periode.min)} og ${formatDate(periode.max)}. Uden dato kommer den under Ønsker.`
                 : destinationId
-                  ? 'Destinationen har intet hotel endnu, så der kan ikke vælges dato.'
+                  ? 'Destinationen har ingen dage, hvor der kan vælges dato.'
                   : 'Vælg først en destination.'}
             </span>
           </label>

@@ -12,6 +12,7 @@ export function DestinationSection({
   activities,
   alleStays,
   alleAktiviteter,
+  foersteDag,
   kanRedigere,
 }: {
   destination: Destination;
@@ -19,6 +20,7 @@ export function DestinationSection({
   activities: Activity[];
   alleStays: Stay[];
   alleAktiviteter: Activity[];
+  foersteDag: string | null;
   kanRedigere: boolean;
 }) {
   const { oensker } = splitActivities(activities);
@@ -33,17 +35,17 @@ export function DestinationSection({
       </div>
 
       {stays.length === 0 ? <p className="tom">Intet hotel endnu.</p> : null}
-      {stays.map((s) => (
-        <div key={s.id} className="stay-med-dage">
-          <StayKort stay={s} farve={destination.color} />
-          <Dage
-            dage={stayDays(s, alleStays)}
-            aktiviteter={alleAktiviteter}
-            destinationId={destination.id}
-            kanRedigere={kanRedigere}
-          />
-        </div>
-      ))}
+      {stays.map((s) => {
+        const dage = stayDays(s, alleStays, foersteDag);
+        return (
+          <div key={s.id} className="stay-med-dage">
+            <StayKort stay={s} farve={destination.color} />
+            {dage.length > 0 ? (
+              <Dage dage={dage} aktiviteter={alleAktiviteter} destinationId={destination.id} kanRedigere={kanRedigere} />
+            ) : null}
+          </div>
+        );
+      })}
 
       <AktivitetsListe titel="Ønsker" liste={oensker} tomTekst="Ingen ønsker endnu." />
 

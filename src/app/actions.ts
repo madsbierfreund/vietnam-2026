@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { hentAdgang } from '@/lib/adgang';
 import { redigeringsFejl } from '@/lib/rolle';
-import { destinationPeriod } from '@/lib/trip/activities';
+import { aktivitetsPeriode, foersteRejsedag } from '@/lib/trip/activities';
 import {
   STATUSER,
   TIDER_PAA_DAGEN,
@@ -152,15 +152,16 @@ export async function gemAktivitet(_f: Svar, fd: FormData): Promise<Svar> {
 
   const supabase = await createClient();
 
-  // Datoen skal ligge i destinationens opholdsperiode.
+  // Datoen skal ligge i destinationens opholdsperiode og efter rejsens første dag (flyet ud).
   if (raekke.date) {
-    const { data: stays, error } = await supabase
-      .from('stays')
-      .select('destination_id, check_in, check_out')
-      .eq('destination_id', raekke.destination_id);
+    const [{ data: stays, error }, { data: transport, error: tFejl }] = await Promise.all([
+      supabase.from('stays').select('destination_id, check_in, check_out').eq('destination_id', raekke.destination_id),
+      supabase.from('transport').select('date'),
+    ]);
     if (error) return `Kunne ikke kontrollere datoen: ${error.message}`;
-    const periode = destinationPeriod(raekke.destination_id, stays ?? []);
-    if (!periode) return 'Kunne ikke gemme aktiviteten: destinationen har intet hotel, så der kan ikke vælges dato.';
+    if (tFejl) return `Kunne ikke kontrollere datoen: ${tFejl.message}`;
+    const periode = aktivitetsPeriode(raekke.destination_id, stays ?? [], foersteRejsedag(transport ?? []));
+    if (!periode) return 'Kunne ikke gemme aktiviteten: destinationen har ingen dage, hvor der kan vælges dato.';
     if (raekke.date < periode.min || raekke.date > periode.max) {
       return `Kunne ikke gemme aktiviteten: datoen skal ligge mellem ${periode.min} og ${periode.max}.`;
     }

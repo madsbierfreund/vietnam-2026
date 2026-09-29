@@ -6,6 +6,7 @@ import { MapsProvider } from './maps/MapsProvider';
 import { TripMap, type Fokus } from './maps/TripMap';
 import { Timeline } from './Timeline';
 import { DestinationSection } from './DestinationSection';
+import { foersteRejsedag } from '@/lib/trip/activities';
 import { ManglerPlacering, type UdenPlacering } from './ManglerPlacering';
 
 // Hele rejsen på én side: tidslinje, kort (sticky på desktop) og destinationslisten.
@@ -67,6 +68,7 @@ export function Oversigt({ trip, kanRedigere }: { trip: Trip; kanRedigere: boole
               activities={activities.filter((a) => a.destination_id === d.id)}
               alleStays={stays}
               alleAktiviteter={activities}
+              foersteDag={foersteRejsedag(transport)}
               kanRedigere={kanRedigere}
             />
           ))}

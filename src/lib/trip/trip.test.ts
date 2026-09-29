@@ -3,7 +3,7 @@ import { TRIP_END, TRIP_START, formatTimeSpan, kalenderFlise, nights, stayForNig
 import { assignLanes, blockLayout, makeAxis, positionPct, todayPct } from './timeline';
 import { nearestDestinationId } from './geo';
 import { routeLegs } from './route';
-import { activitiesForDay, destinationPeriod, splitActivities, stayDays } from './activities';
+import { activitiesForDay, aktivitetsPeriode, destinationPeriod, foersteRejsedag, splitActivities, stayDays } from './activities';
 
 // Den aktuelle plan (samme datoer som seed-scriptet).
 const STAYS = [
@@ -126,25 +126,47 @@ describe('aktiviteter', () => {
 });
 
 describe('dagene under et hotel', () => {
+  // Rejsens transporter (kun datoer): første er flyet fra København 26. dec.
+  const TRANSPORT_DATOER = ['2027-01-11', '2026-12-27', '2026-12-26', '2026-12-30', '2027-01-06'].map((date) => ({ date }));
+  const FOERSTE = foersteRejsedag(TRANSPORT_DATOER);
+
+  it('rejsens første dag er datoen for den første transport', () => {
+    expect(FOERSTE).toBe('2026-12-26');
+    expect(foersteRejsedag([])).toBeNull();
+  });
   it('fra check-in til og med dagen før check-ud', () => {
-    expect(stayDays(STAYS[0], STAYS)).toEqual(['2026-12-26']);
-    expect(stayDays(STAYS[1], STAYS)).toEqual(['2026-12-27', '2026-12-28', '2026-12-29']);
-    expect(stayDays(STAYS[2], STAYS)).toEqual([
+    expect(stayDays(STAYS[1], STAYS, FOERSTE)).toEqual(['2026-12-27', '2026-12-28', '2026-12-29']);
+    expect(stayDays(STAYS[2], STAYS, FOERSTE)).toEqual([
       '2026-12-30', '2026-12-31', '2027-01-01', '2027-01-02', '2027-01-03', '2027-01-04', '2027-01-05',
     ]);
+  });
+  it('rejsens første dag (flyet ud) får ingen flise: Holiday Inn 26.–27. dec. får ingen dage', () => {
+    expect(stayDays(STAYS[0], STAYS, FOERSTE)).toEqual([]);
+    expect(stayDays(STAYS[0], STAYS, null)).toEqual(['2026-12-26']);
+    // Reglen følger transporten, ikke en fast dato: med første transport 27. dec. får Hanoi ikke 27. dec.
+    expect(stayDays(STAYS[1], STAYS, '2026-12-27')).toEqual(['2026-12-28', '2026-12-29']);
+    expect(stayDays(STAYS[0], STAYS, '2026-12-27')).toEqual(['2026-12-26']);
   });
   it('kalenderflisen viser kort ugedag, dagnummer og kort måned', () => {
     expect(kalenderFlise('2026-12-31')).toEqual({ ugedag: 'tor', dag: 31, maaned: 'dec' });
     expect(kalenderFlise('2027-01-11')).toEqual({ ugedag: 'man', dag: 11, maaned: 'jan' });
   });
   it('rejsens sidste ophold (Ke Ga) får også check-ud-dagen 11. jan.', () => {
-    expect(stayDays(STAYS[3], STAYS)).toEqual(['2027-01-06', '2027-01-07', '2027-01-08', '2027-01-09', '2027-01-10', '2027-01-11']);
+    expect(stayDays(STAYS[3], STAYS, FOERSTE)).toEqual(['2027-01-06', '2027-01-07', '2027-01-08', '2027-01-09', '2027-01-10', '2027-01-11']);
   });
-  it('alle dage 26. dec. – 11. jan. dækkes præcis én gang', () => {
-    const alle = STAYS.flatMap((s) => stayDays(s, STAYS));
-    expect(alle).toHaveLength(17);
-    expect(new Set(alle).size).toBe(17);
-    expect(alle).toEqual(tripDays().slice(0, 17));
+  it('alle dage 27. dec. – 11. jan. dækkes præcis én gang; 26. dec. ingen', () => {
+    const alle = STAYS.flatMap((s) => stayDays(s, STAYS, FOERSTE));
+    expect(alle).toHaveLength(16);
+    expect(new Set(alle).size).toBe(16);
+    expect(alle).toEqual(tripDays().slice(1, 17));
+    expect(alle).not.toContain('2026-12-26');
+  });
+  it('en aktivitets dato kan ikke lægges på rejsens første dag', () => {
+    expect(aktivitetsPeriode('saigon', STAYS, FOERSTE)).toEqual({ min: '2026-12-27', max: '2026-12-27' });
+    expect(aktivitetsPeriode('saigon', STAYS, null)).toEqual({ min: '2026-12-26', max: '2026-12-27' });
+    expect(aktivitetsPeriode('hanoi', STAYS, FOERSTE)).toEqual({ min: '2026-12-27', max: '2026-12-30' });
+    expect(aktivitetsPeriode('saigon', [{ ...STAYS[0], check_out: '2026-12-26' }], FOERSTE)).toBeNull();
+    expect(aktivitetsPeriode('ukendt', STAYS, FOERSTE)).toBeNull();
   });
 });
 

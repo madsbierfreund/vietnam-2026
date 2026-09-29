@@ -11,6 +11,24 @@ Format pr. post:
 ═══════════════════════════════════════════════════════════════════
 ## 2026-09-29
 
+### Ingen dag-flise for rejsens første dag (flyet ud)
+- **Hvad:** Rejsens første dag er datoen for den første transport (`foersteRejsedag`, i dag flyet fra København
+  26. dec.). Den dag får aldrig en dag-flise (`stayDays(stay, alleStays, foersteDag)`). Holiday Inn (26.–27. dec.)
+  viser derfor kun opholdskortet, uden fliser og uden dagens "+ Aktivitet". Alle andre regler er uændrede: Hanoi
+  starter stadig 27. dec., og Ke Ga har stadig 11. jan. Aktivitetens dato følger samme regel via
+  `aktivitetsPeriode`, der bruges både af formularen (min/max på datofeltet) og af server-handlingen (Saigon kan nu
+  kun få 27. dec.).
+- **Hvorfor:** 26. dec. er en ren rejsedag; der planlægges intet den dag.
+- **Forkastet:** at hårdkode 26. dec. Reglen følger den første transport, så den flytter med, hvis planen ændres.
+  Afledt af tidslinjens startdato (`TRIP_START`) blev også fravalgt, fordi opgaven definerer dagen som flyets dato.
+- **Uændret:** tidslinjen, kortet og databasen. Destinationens egen "+ Aktivitet i Saigon (HCMC)" under Ønsker er
+  bevaret (den hører til destinationen, ikke til hotellets dage).
+- **Verificeret:** 30 tests, lint, typecheck og build. I appen mod en midlertidig Postgres med begge migrationer og
+  seed.sql: Holiday Inn har 0 fliser og 0 knapper; Hanoi har 3 fliser fra søn 27 dec, Six Senses 7 og Ke Ga 6 (til
+  11 jan). Tidslinjen har uændret 4 blokke og 7 transport-etiketter. Saigon-formularens datofelt har min og max
+  27. dec. En gennemtvunget 26. dec. blev afvist af serveren ("datoen skal ligge mellem 2026-12-27 og 2026-12-27"),
+  og intet blev gemt.
+
 ### Dage under hvert hotel (kalenderfliser)
 - **Hvad:** Under hvert hotel i oversigtens destinationsliste vises opholdets dage som kalenderfliser ("tor / 31 / dec").
   `stayDays`: fra check-in til og med dagen før check-ud. Rejsens sidste ophold (senest check-ud, i dag Ke Ga) får
