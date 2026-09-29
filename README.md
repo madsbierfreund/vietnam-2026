@@ -15,7 +15,8 @@ brugere (Mads og Marie); alt er delt, og alle kan læse, tilføje, rette og slet
 ## Struktur
 
 - `supabase/migrations/20260929120000_init.sql` — hele skemaet: `destinations`, `stays`, `transport`, `activities` + RLS
-- `scripts/seed.ts` — idempotent seed af den nuværende plan (`npm run seed`)
+- `supabase/seed.sql` — idempotent seed af den nuværende plan til Supabase SQL Editor (den primære vej)
+- `scripts/seed.ts` — samme seed som script (`npm run seed`), til hvis man kører lokalt. `src/lib/seed.test.ts` sikrer, at de to indeholder de samme hoteller, transporter og aktiviteter
 - `src/proxy.ts`, `src/lib/supabase/*` — session og login-beskyttelse (alt undtagen `/login` kræver login)
 - `src/lib/trip/*` — ren logik uden UI: datoer og nætter, tidslinjens geometri, prissum, nærmeste destination, ruten, aktivitetslister (testet i `trip.test.ts`)
 - `src/lib/data.ts` — hentning i server-komponenter; fejl vises med Supabase' egen årsag
@@ -26,24 +27,35 @@ brugere (Mads og Marie); alt er delt, og alle kan læse, tilføje, rette og slet
 
 ## Opsætning
 
+Alt kan gøres i browseren: Supabase-dashboardet, Google Cloud Console og Vercel. Intet skal køres lokalt.
+Rækkefølgen i trin 2–4 er vigtig: **migration → brugere → seed**.
+
 ### 1. Supabase-projekt
 
 1. Opret et nyt projekt på [supabase.com](https://supabase.com).
 2. Under **Authentication → Sign In / Providers**: behold **Email** slået til, og slå **Allow new users to sign up** FRA (ingen offentlig tilmelding).
-3. Under **Project Settings → API** finder du `Project URL`, `anon`-nøglen og `service_role`-nøglen.
+3. Under **Project Settings → API** finder du `Project URL` og `anon`-nøglen (bruges i trin 7).
 
 ### 2. Kør migrationen (én gang)
 
-Migrationen er IKKE kørt. Kør `supabase/migrations/20260929120000_init.sql` i Supabase:
-
-- **SQL Editor**: åbn filen, kopiér hele indholdet ind, og tryk **Run**. Eller
-- **Supabase CLI**: `supabase link --project-ref <ref>` og derefter `supabase db push`.
+Åbn **SQL Editor → New query**, kopiér HELE indholdet af `supabase/migrations/20260929120000_init.sql` ind, og tryk **Run**.
+Den opretter tabellerne og adgangsreglerne. Den må kun køres én gang (en ny kørsel fejler med "already exists").
 
 ### 3. Opret de to brugere
 
 **Authentication → Users → Add user → Create new user**: indtast e-mail og adgangskode, og sæt flueben i **Auto Confirm User**. Gør det for Mads og for Marie. Der er ingen admin-side i appen.
 
-### 4. Google Cloud
+### 4. Seed rejseplanen
+
+Åbn **SQL Editor → New query**, kopiér HELE indholdet af `supabase/seed.sql` ind, og tryk **Run**.
+
+- Den indsætter destinationer, hoteller (uden koordinater), transport og nytårsmiddagen i én transaktion. Fejler noget, indsættes intet.
+- Den er idempotent: en post, der allerede findes, springes over og røres ikke. Det gælder samme navn, for transport samme dato/type/fra/til, og for aktiviteter samme destination + titel. Den kan altså køres igen uden dubletter, og rettelser I har lavet i appen (fx placeringer) overskrives aldrig.
+- Til sidst kontrollerer den, at hele planen findes, og skriver "Seed færdig …". Står der `relation "public.destinations" does not exist`, er migrationen (trin 2) ikke kørt.
+
+*Alternativ for den, der kører lokalt:* `npm run seed` (`scripts/seed.ts`) indsætter præcis de samme data. Det kræver `NEXT_PUBLIC_SUPABASE_URL` og `SUPABASE_SERVICE_ROLE_KEY` i `.env.local`.
+
+### 5. Google Cloud
 
 1. Opret (eller vælg) et projekt i [Google Cloud Console](https://console.cloud.google.com), og tilknyt en faktureringskonto.
 2. **APIs & Services → Library**: slå **Maps JavaScript API** og **Places API (New)** til.
@@ -52,47 +64,39 @@ Migrationen er IKKE kørt. Kør `supabase/migrations/20260929120000_init.sql` i 
    - *Application restrictions*: **Websites**, tilføj `https://<dit-vercel-domæne>/*` og `http://localhost:3000/*`.
    - *API restrictions*: begræns til **Maps JavaScript API** og **Places API (New)**.
 
-### 5. Miljøvariabler
-
-Kopiér `.env.example` til `.env.local`, og udfyld:
+### 6. Miljøvariabler
 
 | Variabel | Hvor | Bruges af |
 |---|---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase → Project Settings → API | appen + seed |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase → Project Settings → API | appen (+ lokalt seed-script) |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase → Project Settings → API (`anon`) | appen |
 | `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | Google Cloud → Credentials | appen (kort + stedsøgning) |
 | `NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID` | Google Maps Platform → Map management | appen (kort) |
-| `SUPABASE_SERVICE_ROLE_KEY` | Supabase → Project Settings → API (`service_role`) | **kun** seed-scriptet |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase → Project Settings → API (`service_role`) | **kun** `scripts/seed.ts` lokalt |
 
-`SUPABASE_SERVICE_ROLE_KEY` omgår RLS. Den har bevidst intet `NEXT_PUBLIC_`-præfiks, bruges kun i `scripts/seed.ts` og skal **ikke** lægges i Vercel.
+`SUPABASE_SERVICE_ROLE_KEY` omgår RLS. Den har bevidst intet `NEXT_PUBLIC_`-præfiks og skal **ikke** lægges i Vercel. Bruger du `seed.sql`, skal den slet ikke bruges.
 
 Mangler en Google-variabel, viser appen en besked med variablens navn i stedet for kortet; resten virker.
 
-### 6. Seed (efter migrationen)
+### 7. Deploy på Vercel
+
+1. **Add New → Project** og importér `madsbierfreund/vietnam-2026`. Framework: Next.js (registreres automatisk).
+2. Under **Environment Variables** tilføjer du de fire `NEXT_PUBLIC_*`-variabler (ikke service role-nøglen).
+3. **Deploy**. Tilføj bagefter Vercel-domænet til API-nøglens *Website restrictions* i Google Cloud (trin 5).
+4. I Supabase under **Authentication → URL Configuration**: sæt **Site URL** til Vercel-domænet.
+
+### 8. Kør lokalt (valgfrit)
+
+Kopiér `.env.example` til `.env.local` og udfyld den.
 
 ```bash
 npm install
-npm run seed
-```
-
-Scriptet læser `.env.local` og indsætter destinationer, hoteller (uden koordinater), transport og nytårsmiddagen. Det er idempotent: en post, der allerede findes (samme navn, eller samme dato/type/fra/til for transport), springes over og røres ikke. Rettelser I har lavet i appen overskrives derfor aldrig.
-
-### 7. Kør lokalt
-
-```bash
 npm run dev      # http://localhost:3000
-npm test         # enhedstests
+npm test         # enhedstests (inkl. at seed.sql og seed.ts er ens)
 npm run lint
 npm run typecheck
 npm run build
 ```
-
-### 8. Deploy på Vercel
-
-1. **Add New → Project** og importér `madsbierfreund/vietnam-2026`. Framework: Next.js (registreres automatisk).
-2. Under **Environment Variables** tilføjer du de fire `NEXT_PUBLIC_*`-variabler (ikke service role-nøglen).
-3. **Deploy**. Tilføj bagefter Vercel-domænet til API-nøglens *Website restrictions* i Google Cloud (trin 4).
-4. I Supabase under **Authentication → URL Configuration**: sæt **Site URL** til Vercel-domænet.
 
 ## Placeringer
 

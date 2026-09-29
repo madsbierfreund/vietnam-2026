@@ -1,4 +1,6 @@
 // Seed: indsætter den aktuelle rejseplan. Kør: npm run seed
+// Samme data findes som ren SQL i supabase/seed.sql (til Supabase SQL Editor).
+// Ret altid begge filer — src/lib/seed.test.ts fejler, hvis de glider fra hinanden.
 //
 // Idempotent: hver post findes først på sin naturlige nøgle og indsættes KUN hvis
 // den mangler. Eksisterende rækker røres aldrig — så placeringer, priser og

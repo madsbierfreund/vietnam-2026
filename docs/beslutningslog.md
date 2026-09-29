@@ -11,6 +11,27 @@ Format pr. post:
 ═══════════════════════════════════════════════════════════════════
 ## 2026-09-29
 
+### Seed som ren SQL til Supabase SQL Editor (`supabase/seed.sql`)
+- **Hvad:** Ny `supabase/seed.sql` med præcis de samme data som `scripts/seed.ts`, i én transaktion. Den er
+  idempotent efter samme nøgler (`insert … select … where not exists`): destinations/stays på navn, transport på
+  dato + type + fra + til, activities på destination + titel. `destination_id` slås op på destinationsnavnet, der er
+  ingen hårdkodede UUID'er. Til sidst kontrollerer en `do`-blok, at hele planen findes, og ruller ellers alt tilbage
+  med en tydelig fejl. README gør SQL-filen til den primære vej (migration → brugere → seed.sql); `seed.ts` er beholdt
+  som alternativ. Ny test `src/lib/seed.test.ts` trækker destinationer, hoteller (navn + datoer), transport (dato,
+  type, fra, til) og aktiviteter (titel, dato, tid på dagen) ud af begge filer og kræver, at de er ens.
+- **Hvorfor:** Brugeren kører intet lokalt, så `npm run seed` kan ikke bruges. Uden testen ville de to seeds glide fra
+  hinanden ved næste ændring af planen.
+- **`created_by`:** kolonnen er nullable (`uuid default auth.uid()`, ingen NOT NULL). SQL-filen sætter den derfor ikke,
+  præcis som `seed.ts`. I SQL Editor er der ingen logget-ind bruger, så `auth.uid()` giver null. Der var ikke brug for
+  at falde tilbage på den ældste bruger i `auth.users`.
+- **Forkastet:** at generere SQL'en fra `seed.ts` ved build (en ekstra byggetrin for en fil, der sjældent ændres,
+  og filen skal kunne læses og kopieres som den er). Upsert/`on conflict do update` ville overskrive rettelser lavet i appen.
+- **Verificeret:** i en midlertidig Postgres 16 med den rigtige migration: første kørsel indsætter 4/4/7/1 rækker, og
+  anden kørsel giver `INSERT 0 0` på alle fire. `seed.ts` (via PostgREST) i en anden database giver data, der er
+  identiske med `seed.sql` i alle kolonner. `seed.sql` oven på `seed.ts` indsætter intet. En placering og pris rettet
+  efter seed overlever en ny kørsel. Uden migrationen fejler den med `relation "public.destinations" does not exist`.
+  Testen fejler som den skal, når en dato ændres i kun den ene fil.
+
 ### Første version af appen
 - **Hvad:** Next.js 16 (App Router) + React 19 + TypeScript, Supabase (Auth + Postgres + RLS), Google Maps via
   `@vis.gl/react-google-maps`. Én migration (`20260929120000_init.sql`) med `destinations`, `stays`, `transport`,
