@@ -6,7 +6,6 @@ import { MiniMap } from '@/components/maps/MiniMap';
 import { sletAktivitet } from '@/app/actions';
 import { hentTrip } from '@/lib/data';
 import { formatDate } from '@/lib/trip/dates';
-import { formatDkk } from '@/lib/trip/prices';
 
 export default async function AktivitetSide({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -46,8 +45,6 @@ export default async function AktivitetSide({ params }: { params: Promise<{ id: 
           <dd className="num">
             {a.date ? `${formatDate(a.date, true)}${a.time_of_day ? `, ${a.time_of_day}` : ''}` : 'Ikke lagt på en dag (ønske)'}
           </dd>
-          <dt>Pris</dt>
-          <dd className="num">{formatDkk(a.price_dkk)}</dd>
           <dt>Link</dt>
           <dd>
             {a.url ? (

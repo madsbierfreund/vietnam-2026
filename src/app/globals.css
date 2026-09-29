@@ -195,7 +195,6 @@ p { margin: 0; }
 .akt-liste a:hover { background: var(--panel); }
 .akt-liste .hvornaar { color: var(--muted); font-size: var(--fs-13); min-width: 7.5rem; flex: none; }
 .akt-liste .titel { flex: 1; min-width: 0; }
-.akt-liste .pris { color: var(--muted); font-size: var(--fs-13); flex: none; }
 .tom { color: var(--faint); font-size: var(--fs-13); padding: 0.4rem 0; }
 
 .mangler { display: flex; flex-direction: column; gap: var(--sp-2); }
@@ -204,8 +203,6 @@ p { margin: 0; }
 .mangler li { display: flex; flex-direction: column; gap: var(--sp-2); padding: var(--sp-2) 0; border-bottom: 1px solid var(--border); }
 .mangler .raekke { display: flex; justify-content: space-between; align-items: center; gap: var(--sp-2); }
 
-.total { border-top: 1px solid var(--border-strong); padding-top: var(--sp-3); display: flex; flex-wrap: wrap; gap: var(--sp-2) var(--sp-4); align-items: baseline; }
-.total strong { font-size: var(--fs-20); }
 
 /* ── Info-kort på kortet ── */
 .info { font-family: var(--font-sans); font-size: var(--fs-13); line-height: 1.4; color: var(--text); max-width: 14rem; }

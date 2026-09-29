@@ -4,7 +4,6 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { destinationPeriod } from '@/lib/trip/activities';
-import { parseBelob } from '@/lib/trip/prices';
 import {
   STATUSER,
   TIDER_PAA_DAGEN,
@@ -17,6 +16,8 @@ import {
 
 // Alle skrivninger. Hver handling returnerer en fejltekst MED Supabase' egen
 // årsag, eller omdirigerer ved succes. Fejl sluges aldrig.
+// Priser (price_dkk, price_note) vises og redigeres ikke i appen. De sendes derfor
+// aldrig med i insert/update, så de eksisterende værdier i databasen bevares.
 
 export type Svar = string | null;
 
@@ -28,11 +29,6 @@ function tekst(fd: FormData, navn: string): string {
 function tekstEllerNull(fd: FormData, navn: string): string | null {
   const v = tekst(fd, navn);
   return v === '' ? null : v;
-}
-
-// Tom = ukendt (null), aldrig 0.
-function belob(fd: FormData, navn: string): number | null {
-  return parseBelob(tekst(fd, navn));
 }
 
 function tid(fd: FormData, navn: string): string | null {
@@ -80,8 +76,6 @@ export async function gemHotel(_f: Svar, fd: FormData): Promise<Svar> {
       website_url: tekstEllerNull(fd, 'website_url'),
       extra_url: tekstEllerNull(fd, 'extra_url'),
       extra_url_label: tekstEllerNull(fd, 'extra_url_label'),
-      price_dkk: belob(fd, 'price_dkk'),
-      price_note: tekst(fd, 'price_note'),
       cancellation_note: tekst(fd, 'cancellation_note'),
       status: valg<Status>(fd, 'status', STATUSER),
       ...placering(fd),
@@ -125,7 +119,6 @@ export async function gemAktivitet(_f: Svar, fd: FormData): Promise<Svar> {
       url: tekstEllerNull(fd, 'url'),
       date: tekstEllerNull(fd, 'date'),
       time_of_day: tidPaaDagen === '' ? null : valg<TimeOfDay>(fd, 'time_of_day', TIDER_PAA_DAGEN),
-      price_dkk: belob(fd, 'price_dkk'),
       ...placering(fd),
     };
   } catch (e) {
@@ -181,7 +174,6 @@ export async function gemTransport(_f: Svar, fd: FormData): Promise<Svar> {
       to_place: tekst(fd, 'to_place'),
       carrier_and_number: tekst(fd, 'carrier_and_number'),
       description: tekst(fd, 'description'),
-      price_dkk: belob(fd, 'price_dkk'),
       status: valg<Status>(fd, 'status', STATUSER),
     };
   } catch (e) {

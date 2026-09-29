@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import type { Activity, Destination, Stay } from '@/lib/types';
 import { formatDate, formatDateRange, nights, nightsLabel } from '@/lib/trip/dates';
-import { formatDkk } from '@/lib/trip/prices';
 import { splitActivities } from '@/lib/trip/activities';
 import { StatusChip } from './StatusChip';
 
@@ -55,7 +54,6 @@ function StayKort({ stay, farve }: { stay: Stay; farve: string }) {
       <div className="linje num">
         <span>{formatDateRange(stay.check_in, stay.check_out)}</span>
         <span className="muted">{nightsLabel(nights(stay))}</span>
-        <span>{formatDkk(stay.price_dkk)}</span>
       </div>
       {stay.room_setup ? <p className="muted small">{stay.room_setup}</p> : null}
     </article>
@@ -90,7 +88,6 @@ function AktivitetsListe({
                   </span>
                 ) : null}
                 <span className="titel">{a.title}</span>
-                {a.price_dkk !== null ? <span className="pris num">{formatDkk(a.price_dkk)}</span> : null}
               </Link>
             </li>
           ))}

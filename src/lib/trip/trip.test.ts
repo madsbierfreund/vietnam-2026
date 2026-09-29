@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { TRIP_END, TRIP_START, formatTimeSpan, nights, stayForNight, tripDays } from './dates';
 import { assignLanes, blockLayout, makeAxis, positionPct, todayPct } from './timeline';
-import { parseBelob, priceTotal } from './prices';
 import { nearestDestinationId } from './geo';
 import { routeLegs } from './route';
 import { destinationPeriod, splitActivities } from './activities';
@@ -72,29 +71,6 @@ describe('tidslinjens blokbredder', () => {
     expect(todayPct(axis, new Date(2026, 11, 26, 0))).toBeCloseTo(0);
     expect(todayPct(axis, new Date(2027, 0, 12, 12))).toBeCloseTo((17.5 / 18) * 100);
     expect(todayPct(axis, new Date(2027, 0, 13, 12))).toBeNull();
-  });
-});
-
-describe('samlet pris med manglende priser', () => {
-  it('lægger kun kendte priser sammen og tæller de ukendte', () => {
-    const r = priceTotal([{ price_dkk: 2016 }, { price_dkk: null }, { price_dkk: '11300.00' }, { price_dkk: null }]);
-    expect(r).toEqual({ total: 13316, medPris: 2, udenPris: 2 });
-  });
-  it('en pris på 0 er kendt, ikke manglende', () => {
-    expect(priceTotal([{ price_dkk: 0 }, { price_dkk: null }])).toEqual({ total: 0, medPris: 1, udenPris: 1 });
-  });
-  it('et tomt prisfelt bliver null (ukendt), ikke 0', () => {
-    expect(parseBelob('')).toBeNull();
-    expect(parseBelob('  ')).toBeNull();
-    expect(parseBelob('0')).toBe(0);
-    expect(parseBelob('11.300')).toBe(11300);
-    expect(parseBelob('167 212')).toBe(167212);
-    expect(parseBelob('2016,50')).toBe(2016.5);
-    expect(parseBelob('1.234,5 kr.')).toBe(1234.5);
-    expect(() => parseBelob('abc')).toThrow();
-  });
-  it('ingen priser giver 0 med alle talt som ukendte', () => {
-    expect(priceTotal([{ price_dkk: null }])).toEqual({ total: 0, medPris: 0, udenPris: 1 });
   });
 });
 

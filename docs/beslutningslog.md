@@ -11,6 +11,26 @@ Format pr. post:
 ═══════════════════════════════════════════════════════════════════
 ## 2026-09-29
 
+### Priser fjernet fra appen
+- **Hvad:** Appen viser og redigerer ikke længere priser. Fjernet: den samlede pris nederst på oversigten (inkl.
+  "poster uden pris"), pris og prisnote på hotelkort, hotelside, aktivitetsliste og aktivitetsside, og felterne
+  `price_dkk`/`price_note` i formularerne for hotel, transport og aktivitet. `src/lib/trip/prices.ts` (`priceTotal`,
+  `formatDkk`, `parseBelob`) er slettet sammen med dens tests og de tilhørende CSS-klasser (`.total`, `.akt-liste .pris`).
+  Tidslinjen viste ingen priser, heller ikke i transport-etiketternes hover-tekst, så den er uændret.
+- **Hvorfor:** Vi vil ikke se eller indtaste priser nogen steder i appen.
+- **Databasen er uændret:** kolonnerne `price_dkk` og `price_note` og deres data bevares, så der er ingen migration.
+  Server-handlingerne (`src/app/actions.ts`) sender derfor slet ikke prisfelterne med i insert/update. At sende
+  dem tomme ville overskrive de gemte priser, hver gang et hotel, en transport eller en aktivitet gemmes. Nye rækker
+  får kolonnernes defaults (`price_dkk` null, `price_note` ''). Typerne i `src/lib/types.ts` beholder felterne, fordi
+  de spejler databasen. `supabase/seed.sql` og `scripts/seed.ts` er urørte og indsætter fortsat priserne.
+- **Forkastet:** at droppe kolonnerne (kræver migration og sletter data), og at skjule felterne med CSS (de ville
+  stadig blive sendt og kunne overskrive data).
+- **Verificeret:** tests (19, inkl. seed-drift-testen), lint, typecheck og build er grønne. I appen mod en midlertidig
+  Postgres med migration og seed.sql: ingen prisfelter og ingen pristekst (heller ikke i title-/hover-tekster) på
+  oversigt, hotel- og aktivitetsside eller nogen formular. Efter at have gemt en rettet hotel-, aktivitets- og
+  transportformular står priserne uændret i databasen (Six Senses 167212 + prisnote, galamiddag 10908, VJ138 2357).
+  En ny aktivitet oprettes med tom pris.
+
 ### Seed som ren SQL til Supabase SQL Editor (`supabase/seed.sql`)
 - **Hvad:** Ny `supabase/seed.sql` med præcis de samme data som `scripts/seed.ts`, i én transaktion. Den er
   idempotent efter samme nøgler (`insert … select … where not exists`): destinations/stays på navn, transport på
@@ -59,7 +79,7 @@ Format pr. post:
 - **Forkastet:** Dag-kolonner hvor blokken fylder hele check-in- til check-ud-dagen (bredden ville blive nætter + 1
   og ikke proportional). Grupperede transport-etiketter pr. dag: 26. og 27. dec. overlappede på skærmbilledet.
 
-### Priser: ukendt er ikke 0
+### Priser: ukendt er ikke 0 (appens prisvisning og prissum er fjernet, se "Priser fjernet fra appen" ovenfor; seed-data er uændret)
 - **Hvad:** `price_dkk` er nullable. Summen tager kun kendte priser med og viser antallet af poster uden pris ved
   siden af. Et tomt prisfelt i en formular gemmes som null. Båd-transferen Cam Ranh → Six Senses seedes med
   `price_dkk = 0` og beskrivelsen "Inkluderet i Six Senses-prisen".

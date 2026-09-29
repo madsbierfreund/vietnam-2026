@@ -18,7 +18,7 @@ brugere (Mads og Marie); alt er delt, og alle kan læse, tilføje, rette og slet
 - `supabase/seed.sql` — idempotent seed af den nuværende plan til Supabase SQL Editor (den primære vej)
 - `scripts/seed.ts` — samme seed som script (`npm run seed`), til hvis man kører lokalt. `src/lib/seed.test.ts` sikrer, at de to indeholder de samme hoteller, transporter og aktiviteter
 - `src/proxy.ts`, `src/lib/supabase/*` — session og login-beskyttelse (alt undtagen `/login` kræver login)
-- `src/lib/trip/*` — ren logik uden UI: datoer og nætter, tidslinjens geometri, prissum, nærmeste destination, ruten, aktivitetslister (testet i `trip.test.ts`)
+- `src/lib/trip/*` — ren logik uden UI: datoer og nætter, tidslinjens geometri, nærmeste destination, ruten, aktivitetslister (testet i `trip.test.ts`)
 - `src/lib/data.ts` — hentning i server-komponenter; fejl vises med Supabase' egen årsag
 - `src/app/actions.ts` — alle skrivninger (server actions)
 - `src/components/` — oversigt, tidslinje, destinationsliste, formularer, kort (`maps/`)

@@ -65,14 +65,7 @@ export function TransportForm({ transport }: { transport?: Transport }) {
         <textarea name="description" rows={3} defaultValue={t?.description} />
       </label>
 
-      <div className="felt-par">
-        <label className="felt">
-          <span>Pris (kr.)</span>
-          <input name="price_dkk" inputMode="decimal" defaultValue={t?.price_dkk ?? ''} />
-          <span className="hjaelp">Lad feltet stå tomt, hvis prisen er ukendt.</span>
-        </label>
-        <StatusSelect vaerdi={t?.status ?? 'idé'} />
-      </div>
+      <StatusSelect vaerdi={t?.status ?? 'idé'} />
 
       {fejl ? <p className="fejl">{fejl}</p> : null}
 

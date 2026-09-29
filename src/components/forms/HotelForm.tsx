@@ -82,19 +82,7 @@ export function HotelForm({ destinations, stay }: { destinations: Destination[];
           </label>
         </div>
 
-        <div className="felt-par">
-          <label className="felt">
-            <span>Pris (kr.)</span>
-            <input name="price_dkk" inputMode="decimal" defaultValue={stay?.price_dkk ?? ''} />
-            <span className="hjaelp">Lad feltet stå tomt, hvis prisen er ukendt.</span>
-          </label>
-          <StatusSelect vaerdi={stay?.status ?? 'idé'} />
-        </div>
-
-        <label className="felt">
-          <span>Prisnote</span>
-          <textarea name="price_note" rows={2} defaultValue={stay?.price_note} />
-        </label>
+        <StatusSelect vaerdi={stay?.status ?? 'idé'} />
 
         <label className="felt">
           <span>Afbestilling</span>

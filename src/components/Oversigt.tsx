@@ -2,7 +2,6 @@
 
 import { useCallback, useState } from 'react';
 import type { Trip } from '@/lib/types';
-import { priceTotal, formatDkk } from '@/lib/trip/prices';
 import { MapsProvider } from './maps/MapsProvider';
 import { TripMap, type Fokus } from './maps/TripMap';
 import { Timeline } from './Timeline';
@@ -33,8 +32,6 @@ export function Oversigt({ trip }: { trip: Trip }) {
         type: `aktivitet, ${destNavn.get(a.destination_id) ?? ''}`,
       })),
   ];
-
-  const total = priceTotal([...stays, ...transport, ...activities]);
 
   return (
     <MapsProvider>
@@ -69,16 +66,6 @@ export function Oversigt({ trip }: { trip: Trip }) {
               activities={activities.filter((a) => a.destination_id === d.id)}
             />
           ))}
-
-          <div className="total">
-            <span className="muted">Kendte priser i alt</span>
-            <strong className="num">{formatDkk(total.total)}</strong>
-            {total.udenPris > 0 ? (
-              <span className="advarsel num">
-                {total.udenPris} {total.udenPris === 1 ? 'post' : 'poster'} uden pris
-              </span>
-            ) : null}
-          </div>
         </div>
       </div>
     </MapsProvider>

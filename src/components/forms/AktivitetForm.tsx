@@ -123,17 +123,10 @@ export function AktivitetForm({
           <textarea name="description" rows={4} defaultValue={activity?.description} />
         </label>
 
-        <div className="felt-par">
-          <label className="felt">
-            <span>Link</span>
-            <input type="url" name="url" defaultValue={activity?.url ?? ''} placeholder="https://" />
-          </label>
-          <label className="felt">
-            <span>Pris (kr.)</span>
-            <input name="price_dkk" inputMode="decimal" defaultValue={activity?.price_dkk ?? ''} />
-            <span className="hjaelp">Lad feltet stå tomt, hvis prisen er ukendt.</span>
-          </label>
-        </div>
+        <label className="felt">
+          <span>Link</span>
+          <input type="url" name="url" defaultValue={activity?.url ?? ''} placeholder="https://" />
+        </label>
 
         {fejl ? <p className="fejl">{fejl}</p> : null}
 

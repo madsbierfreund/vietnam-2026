@@ -7,7 +7,6 @@ import { MiniMap } from '@/components/maps/MiniMap';
 import { sletHotel } from '@/app/actions';
 import { hentTrip } from '@/lib/data';
 import { formatDate, formatDateRange, nights, nightsLabel } from '@/lib/trip/dates';
-import { formatDkk } from '@/lib/trip/prices';
 import { splitActivities } from '@/lib/trip/activities';
 
 export default async function HotelSide({ params }: { params: Promise<{ id: string }> }) {
@@ -64,14 +63,6 @@ export default async function HotelSide({ params }: { params: Promise<{ id: stri
         <dl className="fakta">
           <dt>Værelser</dt>
           <dd>{stay.room_setup || '—'}</dd>
-          <dt>Pris</dt>
-          <dd className="num">{formatDkk(stay.price_dkk)}</dd>
-          {stay.price_note ? (
-            <>
-              <dt>Prisnote</dt>
-              <dd>{stay.price_note}</dd>
-            </>
-          ) : null}
           <dt>Afbestilling</dt>
           <dd>{stay.cancellation_note || '—'}</dd>
           <dt>Links</dt>
