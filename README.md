@@ -17,6 +17,7 @@ brugere (Mads og Marie); alt er delt, og alle kan læse, tilføje, rette og slet
 - `supabase/migrations/20260929120000_init.sql` — hele skemaet: `destinations`, `stays`, `transport`, `activities` + RLS
 - `supabase/migrations/20260929130000_roller.sql` — roller: `profiles`, `kan_redigere()`, trigger for nye brugere, RLS hvor kun redaktører må skrive
 - `supabase/migrations/20261003120000_ny_plan.sql` — kun data: skifter en database med den gamle plan (Hanoi, Six Senses) til den endelige plan (Ho Chi Minh, Regent Phu Quoc, Azerai)
+- `supabase/migrations/20261003130000_hotel_des_arts.sql` — kun data: erstatter pladsholderen for hotellet i Ho Chi Minh City med Hôtel des Arts Saigon – MGallery
 - `supabase/seed.sql` — idempotent seed af den nuværende plan til Supabase SQL Editor (den primære vej)
 - `scripts/seed.ts` — samme seed som script (`npm run seed`), til hvis man kører lokalt. `src/lib/seed.test.ts` sikrer, at de to indeholder de samme destinationer, hoteller og transporter
 - `src/proxy.ts`, `src/lib/supabase/*` — session og login-beskyttelse (alt undtagen `/login` kræver login)
@@ -73,6 +74,15 @@ Har databasen den gamle plan (Hanoi, Six Senses, Holiday Inn), så åbn **SQL Ed
 - Den fjerner den gamle plan (også aktiviteter på de destinationer, der udgår) og lægger den endelige plan ind. Transport erstattes helt.
 - Den kan køres igen uden at ændre resultatet, og den bevarer placeringen på Azerai.
 - Den skriver "Ny plan er lagt ind …". Ellers ruller den alt tilbage med en fejl, der siger, hvad der mangler.
+- Kør derefter trin 4d. Kør ikke `ny_plan.sql` igen efter 4d: den ville sætte pladsholderen for Ho Chi Minh-hotellet tilbage.
+
+### 4d. Hotellet i Ho Chi Minh City
+
+Har databasen pladsholderen "Hotel i Ho Chi Minh City (ikke valgt endnu)", så åbn **SQL Editor → New query**, kopiér HELE indholdet af `supabase/migrations/20261003130000_hotel_des_arts.sql` ind, og tryk **Run**.
+
+- Den gør pladsholderen til Hôtel des Arts Saigon – MGallery, 27.–30. dec. Intet andet i planen ændres.
+- Den kan køres igen uden at ændre resultatet. Den skriver "Hôtel des Arts Saigon – MGallery er lagt ind …", ellers ruller den alt tilbage.
+- En ny database seedet med `seed.sql` har allerede hotellet og skal ikke have trin 4c eller 4d.
 
 ### 5. Google Cloud
 

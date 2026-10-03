@@ -11,6 +11,27 @@ Format pr. post:
 ═══════════════════════════════════════════════════════════════════
 ## 2026-10-03
 
+### Hotellet i Ho Chi Minh City: Hôtel des Arts Saigon – MGallery
+- **Hvad:** Ny datamigration `20261003130000_hotel_des_arts.sql` (kun data). Pladsholderen "Hotel i Ho Chi Minh City
+  (ikke valgt endnu)" omdøbes til "Hôtel des Arts Saigon – MGallery", så rækken (og id'et) bevares, og alle felter
+  sættes: 27.–30. dec., værelsesforespørgsel i `room_setup`, beskrivelse, status, adresse og kontakt i `description`,
+  Accor-link, prisskøn i `price_note` (vises ikke), tom afbestilling. Var pladsholderen slettet i appen, oprettes
+  hotellet i stedet. Intet andet i planen ændres. `supabase/seed.sql` og `scripts/seed.ts` har samme hotel, så en ny
+  seed giver samme resultat. Drift-testen krævede ingen ændring (stadig 3 hoteller, nu med det nye navn).
+- **Status `valgt`:** appen har kun `idé`/`valgt`/`booket` og ingen værdi for "forespurgt/afventer". `valgt` betyder
+  "valgt, ikke booket" og var også den værdi, den oprindelige plan brugte til valgte, ikke bookede hoteller.
+- **Kontrol:** migrationen ruller tilbage, medmindre hotellet findes med 27.–30. dec., pladsholderen er væk, og der
+  stadig er præcis 3 destinationer, 3 hoteller og 6 transporter.
+- **Bemærk:** kør ikke `20261003120000_ny_plan.sql` igen efter denne. Den sletter alle hoteller uden for sin liste og
+  ville sætte pladsholderen tilbage. README trin 4c/4d siger det.
+- **Verificeret** i en midlertidig Postgres 16 i tilstanden "gammel seed + roller + ny_plan":
+  - To kørsler gav identisk resultat, og hotellet beholdt pladsholderens id.
+  - Destinationer, transport, Regent og Azerai var uændrede, og resultatet var identisk med en frisk `seed.sql`.
+  - Med pladsholderen slettet på forhånd blev hotellet oprettet med samme resultat.
+  - Når kontrollen fejlede, blev alt rullet tilbage.
+  - I appen viste tidslinjen og hotelkortet "Hôtel des Arts Saigon – MGallery" med chippen valgt og fliserne 27.–29.
+    dec., og hotelsiden viste beskrivelse, værelser og link. Pladsholderen stod ingen steder.
+
 ### Den endelige rejseplan: Ho Chi Minh, Regent Phu Quoc og Azerai
 - **Hvad:** Ny datamigration `20261003120000_ny_plan.sql` (kun data, intet skema). Den fjerner den gamle plan:
   Hanoi med Aira, Six Senses med Cam Ranh-transport og nytårsmiddag, Holiday Inn og andre hotelkandidater. Den lægger

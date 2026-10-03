@@ -42,6 +42,15 @@ async function sikr(tabel: string, noegle: Raekke, felter: Raekke, etiket: strin
   return data.id as string;
 }
 
+const DES_ARTS_DESC = [
+  'Boutiquehotel i fransk kolonistil med kunst fra Indokina, rooftop-pool og rooftop-bar (Social Club).',
+  'Status: Marie har sendt forespørgsel. Hotellets reservationsafdeling svarer efter 5. okt. 2026.',
+  'Vi lander i SGN 27. dec. kl. 04:30 – tidlig check-in skal aftales med hotellet.',
+  'Adresse: 76-78 Nguyen Thi Minh Khai, District 3, Ho Chi Minh City, Vietnam',
+  'Telefon: +84 28 3989 8888',
+  'E-mail: h9231@accor.com (hotellet), Hdas.DU@accor.com (front office)',
+].join('\n');
+
 const REGENT_DESC = [
   'Bekræftelsesnummer: 6092079',
   'Rate: Best Flexible Member Exclusive Rate. Daglig morgenmad i Rice Market og Refreshment Gallery inkluderet.',
@@ -85,16 +94,16 @@ async function main() {
   const hoteller = [
     {
       destination: 'Saigon (HCMC)',
-      name: 'Hotel i Ho Chi Minh City (ikke valgt endnu)',
+      name: 'Hôtel des Arts Saigon – MGallery',
       check_in: '2026-12-27',
       check_out: '2026-12-30',
-      room_setup: '',
-      description: 'Hotellet er ikke valgt endnu. 3 nætter.',
-      website_url: null,
+      room_setup: 'Forespurgt: værelser til 2 voksne og 4 børn (16, 14, 9 og 8 år), helst tæt på hinanden',
+      description: DES_ARTS_DESC,
+      website_url: 'https://all.accor.com/hotel/9231/index.en.shtml',
       price_dkk: null,
-      price_note: '',
+      price_note: 'Skøn ca. 14.200 kr. for 2 Deluxe-værelser i 3 nætter (ikke bekræftet)',
       cancellation_note: '',
-      status: 'idé',
+      status: 'valgt',
     },
     {
       destination: 'Phu Quoc (Regent)',
