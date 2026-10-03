@@ -27,7 +27,7 @@ describe('seed.sql og seed.ts har samme data', () => {
       afsnit('── Hoteller', '── Transport'),
       new RegExp(String.raw`'([^']+)',\s*date '${D}', date '${D}'`, 'g'),
     );
-    expect(fraTs).toHaveLength(4);
+    expect(fraTs).toHaveLength(3);
     expect(fraSql).toEqual(fraTs);
   });
 
@@ -37,30 +37,22 @@ describe('seed.sql og seed.ts har samme data', () => {
       new RegExp(String.raw`date: '${D}', kind: '([^']+)', from_place: '([^']+)', to_place: '([^']+)'`, 'g'),
     );
     const fraSql = alle(
-      afsnit('── Transport', '── Aktiviteter'),
+      afsnit('── Transport', '── Kontrol'),
       new RegExp(String.raw`\(date '${D}', '([^']+)', '([^']+)',\s*'([^']+)'`, 'g'),
     );
-    expect(fraTs).toHaveLength(7);
+    expect(fraTs).toHaveLength(6);
     expect(fraSql).toEqual(fraTs);
   });
 
-  it('aktiviteter: titel, dato og tid på dagen', () => {
-    const fraTs = alle(
-      ts,
-      new RegExp(String.raw`title: '([^']+)' \},\s*\{[^}]*?date: '${D}',\s*time_of_day: '([^']+)'`, 'g'),
-    );
-    const fraSql = alle(
-      afsnit('── Aktiviteter', '── Kontrol'),
-      new RegExp(String.raw`'([^']+)',\s*'[^']*',\s*date '${D}',\s*'([^']+)'`, 'g'),
-    );
-    expect(fraTs).toHaveLength(1);
-    expect(fraSql).toEqual(fraTs);
+  it('aktiviteter: ingen af de to seeds indsætter aktiviteter', () => {
+    expect(ts).not.toMatch(/sikr\(\s*'activities'/);
+    expect(sql).not.toMatch(/insert into public\.activities/);
   });
 
   it('destinationer: navn og rækkefølge', () => {
     const fraTs = alle(ts, /\{ name: '([^']+)', area: '[^']*', color: '#[0-9A-F]{6}', sort_order: (\d+) \}/g);
     const fraSql = alle(afsnit('── Destinationer', '── Hoteller'), /\('([^']+)',\s*'[^']*',\s*'#[0-9A-F]{6}', (\d+)\)/g);
-    expect(fraTs).toHaveLength(4);
+    expect(fraTs).toHaveLength(3);
     expect(fraSql).toEqual(fraTs);
   });
 

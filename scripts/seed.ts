@@ -1,4 +1,4 @@
-// Seed: indsætter den aktuelle rejseplan. Kør: npm run seed
+// Seed: indsætter den aktuelle rejseplan (den endelige plan fra 3. okt. 2026). Kør: npm run seed
 // Samme data findes som ren SQL i supabase/seed.sql (til Supabase SQL Editor).
 // Ret altid begge filer — src/lib/seed.test.ts fejler, hvis de glider fra hinanden.
 //
@@ -42,14 +42,39 @@ async function sikr(tabel: string, noegle: Raekke, felter: Raekke, etiket: strin
   return data.id as string;
 }
 
+const REGENT_DESC = [
+  'Bekræftelsesnummer: 6092079',
+  'Rate: Best Flexible Member Exclusive Rate. Daglig morgenmad i Rice Market og Refreshment Gallery inkluderet.',
+  'Betaling: fuld betaling senest 2. dec. 2026 (hotellet sender et betalingslink 28 dage før ankomst). Bookingen er garanteret med kreditkort.',
+  'Check-in kl. 15:00. Medbring det fysiske kreditkort, der er brugt som garanti.',
+  'Lufthavnstransfer: Mercedes-Benz Viano til 6 med bagage. Ikke bekræftet endnu – hotellet skal have vores flynumre.',
+  'Nytårsprogram: ikke offentliggjort af hotellet endnu.',
+  'Adresse: Phu Quoc Marina Integrated Resort Complex, Duong Bao Ward, Phu Quoc Special Zone, An Giang, Vietnam',
+  'Telefon: resort +84 297 388 0000, reservationer +84 28 7301 1800',
+  'E-mail: reservations.regentpq@ihg.com',
+].join('\n');
+
+const AZERAI_DESC = [
+  'Stille, elegant resort i en 4,5 hektar stor have ved en 5 km lang hvid sandstrand med udsigt til Ke Ga-fyret. Tre poolområder, spa og yoga. Michelin Key 2025.',
+  '',
+  'Reservationsnummer: 2106044',
+  'Rate: Flexible – Super Early Bird. Daglig morgenmad inkluderet.',
+  'Sen check-ud til kl. 18:00 den 11. jan. (inkluderet i prisen).',
+  'Private transfers inkluderet: SGN-lufthavnen → resortet 5. jan. og resortet → SGN-lufthavnen 11. jan. (resortet anbefaler afgang ca. kl. 16:00).',
+  'Betaling: 50 % depositum senest 5. okt. 2026 via OnePay. Resten senest 29. dec. 2026 (resortet sender et link).',
+  'Check-in kl. 14:00.',
+  'Adresse: Hon Lan Area, Tan Thanh Commune, Lam Dong Province, Vietnam',
+  'Telefon: +84 252 3682 222, hotline +84 889 02 07 07',
+  'E-mail: reservations.kegabay@azerai.com',
+].join('\n');
+
 async function main() {
   console.log('Destinationer');
   const dest: Record<string, string> = {};
   const destinationer = [
-    { name: 'Saigon (HCMC)', area: 'Ho Chi Minh City, ved lufthavnen', color: '#7E6699', sort_order: 1 },
-    { name: 'Hanoi', area: 'Hoan Kiem, ved Old Quarter', color: '#B5735A', sort_order: 2 },
-    { name: 'Ninh Van Bay (Six Senses)', area: 'Ninh Van Bay, nord for Nha Trang', color: '#4F8C8B', sort_order: 3 },
-    { name: 'Ke Ga (Azerai)', area: 'Ke Ga Bay, syd for Phan Thiet', color: '#B9788F', sort_order: 4 },
+    { name: 'Saigon (HCMC)', area: 'Ho Chi Minh City', color: '#7E6699', sort_order: 1 },
+    { name: 'Phu Quoc (Regent)', area: 'Duong Bao, Phu Quoc', color: '#4F8C8B', sort_order: 2 },
+    { name: 'Ke Ga (Azerai)', area: 'Ke Ga Bay, syd for Phan Thiet', color: '#B9788F', sort_order: 3 },
   ];
   for (const d of destinationer) {
     const { name, ...rest } = d;
@@ -60,69 +85,46 @@ async function main() {
   const hoteller = [
     {
       destination: 'Saigon (HCMC)',
-      name: 'Holiday Inn & Suites Saigon Airport',
-      check_in: '2026-12-26',
-      check_out: '2026-12-27',
-      room_setup: '2 × 1 Bedroom Suite City View med sovesofa (56 m², maks. 3 personer pr. suite)',
-      description:
-        '5–10 minutter fra lufthavnen, så vi kan sove efter landingen kl. 04:30.',
-      website_url: 'https://www.ihg.com/holidayinn/hotels/us/en/ho-chi-minh-city/sgnsa/hoteldetail',
-      extra_url: null,
-      extra_url_label: null,
-      price_dkk: 2016,
-      price_note: '',
-      cancellation_note: 'Gratis afbestilling indtil 25. december.',
-      status: 'valgt',
-    },
-    {
-      destination: 'Hanoi',
-      name: 'Aira Boutique Hanoi Hotel & Spa',
+      name: 'Hotel i Ho Chi Minh City (ikke valgt endnu)',
       check_in: '2026-12-27',
       check_out: '2026-12-30',
-      room_setup: 'Balcony AIRA Suite + Pool View Suite, 50 m² hver, kingsize-seng + ekstraseng, morgenmad inkluderet',
-      description:
-        'Elegant boutiquehotel på en stille, trækantet gade i gåafstand fra Old Quarter. Rooftop infinity-pool og bar, spa. Anbefalet af Audley, med i Michelin-guiden.',
-      website_url: 'https://airaboutiquehanoi.com/',
-      extra_url: null,
-      extra_url_label: null,
-      price_dkk: 11300,
-      price_note: 'Ca.-pris.',
-      cancellation_note: 'Gratis afbestilling indtil 5 dage før. 50 % depositum.',
-      status: 'valgt',
+      room_setup: '',
+      description: 'Hotellet er ikke valgt endnu. 3 nætter.',
+      website_url: null,
+      price_dkk: null,
+      price_note: '',
+      cancellation_note: '',
+      status: 'idé',
     },
     {
-      destination: 'Ninh Van Bay (Six Senses)',
-      name: 'Six Senses Ninh Van Bay',
+      destination: 'Phu Quoc (Regent)',
+      name: 'Regent Phu Quoc',
       check_in: '2026-12-30',
-      check_out: '2027-01-06',
-      room_setup:
-        '1 Hill Top Pool Villa (158 m², udsigt over bugten) + 1 Beachfront Pool Villa (176 m², på stranden), 2 voksne + 1 barn i hver',
-      description:
-        'Villaresort i en afsondret bugt på Hon Heo-halvøen, kun tilgængelig med båd. Privat pool i hver villa, spa, børneklub op til 11 år, gratis kajak, snorkling og SUP.',
-      website_url: 'https://www.sixsenses.com/en/hotels-resorts/asia-the-pacific/vietnam/ninh-van-bay/',
-      extra_url: null,
-      extra_url_label: 'Nyhavn Rejser',
-      price_dkk: 167212,
-      price_note:
-        'USD 26.059. Inkl. morgenmad, skat, service charge og delt transfer fra Cam Ranh-lufthavnen (1 time i bil + 20 min. speedbåd).',
-      cancellation_note: 'Gratis afbestilling indtil 15. november. Fuld betaling 16. november, derefter ikke-refunderbar.',
-      status: 'valgt',
+      check_out: '2027-01-05',
+      room_setup: '2 forbundne Ocean View Suites (én king, én twin)',
+      description: REGENT_DESC,
+      website_url: 'https://phuquoc.regenthotels.com',
+      price_dkk: null,
+      price_note: 'I alt VND 459.621.300 (ca. USD 17.344). Lufthavnstransfer: VND 1.360.800 pr. bil pr. vej.',
+      cancellation_note:
+        'Gratis afbestilling indtil kl. 18:00 vietnamesisk tid den 2. dec. 2026. Derefter mistes hele depositummet.',
+      status: 'booket',
     },
     {
       destination: 'Ke Ga (Azerai)',
       name: 'Azerai Ke Ga Bay',
-      check_in: '2027-01-06',
+      check_in: '2027-01-05',
       check_out: '2027-01-11',
-      room_setup: '2 Pool Villas (130 m², privat pool, 2 voksne + 1 barn i hver), morgenmad inkluderet',
-      description:
-        'Stille, elegant resort i en 4,5 hektar stor have ved en 5 km lang hvid sandstrand med udsigt til Ke Ga-fyret. Tre poolområder, spa og yoga. Michelin Key 2025.',
-      website_url: 'https://azerai.com/azerai-ke-ga-bay/',
-      extra_url: null,
-      extra_url_label: null,
-      price_dkk: 26800,
-      price_note: 'Ca.-pris.',
-      cancellation_note: 'Gratis afbestilling (præcis frist skal tjekkes).',
-      status: 'valgt',
+      room_setup:
+        '2 Pool Villas med plungepool (130 m²). Ønsket sengeopsætning (afventer resortets bekræftelse): Villa 1 – kingsize-seng til Marie og de to yngste. Villa 2 – to separate senge til den 16- og 14-årige plus ekstraseng til Mads.',
+      description: AZERAI_DESC,
+      website_url: 'https://azerai.com',
+      price_dkk: 35950,
+      price_note:
+        'I alt VND 145.580.627 (ca. 35.950 kr.). Depositum VND 72.790.313 senest 5. okt. 2026 via OnePay. Rest VND 72.790.314 den 29. dec. 2026.',
+      cancellation_note:
+        'Gratis ændring af datoer og værelser indtil 7 dage før ankomst (29. dec. 2026); prisen genberegnes ved nye datoer. Afbestilling inden for 7 dage før ankomst koster 100 %.',
+      status: 'booket',
     },
   ];
   for (const h of hoteller) {
@@ -133,60 +135,43 @@ async function main() {
   console.log('Transport');
   const transport = [
     {
-      date: '2026-12-26', kind: 'fly', from_place: 'København', to_place: 'HCMC',
+      date: '2026-12-26', kind: 'fly', from_place: 'København', to_place: 'Ho Chi Minh City (SGN)',
       departs_at: '10:50', arrives_at: '04:30', carrier_and_number: 'Vietnam Airlines',
-      description: 'Ankomst næste dag kl. 04:30.', price_dkk: null, status: 'booket',
+      description: 'Booking-reference DAKEO5. Lander i SGN 27. dec. kl. 04:30.', status: 'booket',
     },
     {
-      date: '2026-12-27', kind: 'fly', from_place: 'HCMC', to_place: 'Hanoi',
-      departs_at: '13:40', arrives_at: '15:50', carrier_and_number: 'Vietjet VJ138',
-      description: 'Deluxe med 20 kg bagage pr. person.', price_dkk: 2357, status: 'valgt',
+      date: '2026-12-30', kind: 'fly', from_place: 'Ho Chi Minh City (SGN)', to_place: 'Phu Quoc (PQC)',
+      departs_at: null, arrives_at: null, carrier_and_number: '',
+      description: 'Indenrigsfly. Ikke booket endnu.', status: 'idé',
     },
     {
-      date: '2026-12-30', kind: 'fly', from_place: 'Hanoi', to_place: 'Cam Ranh',
-      departs_at: '10:30', arrives_at: '12:20', carrier_and_number: 'Vietjet VJ785',
-      description: 'Deluxe med 20 kg bagage pr. person.', price_dkk: 2993, status: 'valgt',
+      date: '2027-01-05', kind: 'fly', from_place: 'Phu Quoc (PQC)', to_place: 'Ho Chi Minh City (SGN)',
+      departs_at: '11:05', arrives_at: '12:10', carrier_and_number: 'Vietjet VJ320',
+      description: 'Ikke booket endnu. Foretrukket: Vietjet VJ320 kl. 11:05–12:10.', status: 'idé',
     },
     {
-      // Inkluderet i Six Senses-prisen: en kendt ekstrapris på 0 kr., ikke en ukendt pris.
-      date: '2026-12-30', kind: 'båd', from_place: 'Cam Ranh', to_place: 'Six Senses',
-      departs_at: null, arrives_at: null, carrier_and_number: 'Delt bil + speedbåd',
-      description: 'Inkluderet i Six Senses-prisen.', price_dkk: 0, status: 'valgt',
+      date: '2027-01-05', kind: 'bil', from_place: 'Ho Chi Minh City (SGN)', to_place: 'Azerai Ke Ga Bay',
+      departs_at: null, arrives_at: null, carrier_and_number: 'Privat transfer (Azerai)',
+      description: 'Ca. 3 timer. Arrangeres af resortet og er inkluderet i Azerai-bookingen.', status: 'booket',
     },
     {
-      date: '2027-01-06', kind: 'bil', from_place: 'Six Senses', to_place: 'Ke Ga',
-      departs_at: null, arrives_at: null, carrier_and_number: 'Båd + privat chauffør',
-      description: 'Ca. 4–5 timer.', price_dkk: null, status: 'idé',
+      date: '2027-01-11', kind: 'bil', from_place: 'Azerai Ke Ga Bay', to_place: 'Ho Chi Minh City (SGN)',
+      departs_at: '16:00', arrives_at: null, carrier_and_number: 'Privat transfer (Azerai)',
+      description: 'Inkluderet i Azerai-bookingen. Resortet anbefaler afgang ca. kl. 16:00. Sen check-ud til kl. 18:00.',
+      status: 'booket',
     },
     {
-      date: '2027-01-11', kind: 'bil', from_place: 'Ke Ga', to_place: 'HCMC lufthavn',
-      departs_at: null, arrives_at: null, carrier_and_number: 'Privat chauffør',
-      description: '2,5–3 timer.', price_dkk: null, status: 'idé',
-    },
-    {
-      date: '2027-01-11', kind: 'fly', from_place: 'HCMC', to_place: 'København',
-      departs_at: '22:45', arrives_at: '06:00', carrier_and_number: 'Vietnam Airlines',
-      description: 'Ankomst næste dag kl. 06:00.', price_dkk: null, status: 'booket',
+      date: '2027-01-11', kind: 'fly', from_place: 'Ho Chi Minh City (SGN)', to_place: 'København via München',
+      departs_at: '22:45', arrives_at: null, carrier_and_number: 'Vietnam Airlines VN033',
+      description:
+        'Booking-reference DAKEO5. Vietnam Airlines har nedgraderet os fra premium economy til economy på VN033. Vi har ikke accepteret det og afventer deres svar.',
+      status: 'booket',
     },
   ];
   for (const t of transport) {
     const { date, kind, from_place, to_place, ...rest } = t;
     await sikr('transport', { date, kind, from_place, to_place }, rest, `${date} ${kind} ${from_place} → ${to_place}`);
   }
-
-  console.log('Aktiviteter');
-  await sikr(
-    'activities',
-    { destination_id: dest['Ninh Van Bay (Six Senses)'], title: 'Nytårsgalamiddag (obligatorisk)' },
-    {
-      description:
-        'Obligatorisk nytårsgalamiddag på Six Senses. USD 340 pr. voksen og USD 170 pr. barn under 12. Drikkevarer ikke inkluderet.',
-      date: '2026-12-31',
-      time_of_day: 'aften',
-      price_dkk: 10908,
-    },
-    'Nytårsgalamiddag (obligatorisk)',
-  );
 
   console.log('\nSeed færdig.');
 }

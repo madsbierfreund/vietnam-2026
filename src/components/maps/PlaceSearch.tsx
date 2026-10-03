@@ -12,7 +12,7 @@ type Forslag = { id: string; primaer: string; sekundaer: string; forudsigelse: g
 export function PlaceSearch({
   onPick,
   autoFocus = false,
-  placeholder = 'Søg efter et sted, fx Hoa Lo Prison',
+  placeholder = 'Søg efter et sted, fx Ben Thanh Market',
 }: {
   onPick: (sted: PickedPlace) => void;
   autoFocus?: boolean;

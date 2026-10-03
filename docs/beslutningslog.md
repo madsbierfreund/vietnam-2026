@@ -9,6 +9,41 @@ Format pr. post:
 - **Status:** bygget / verificeret / udestår
 
 ═══════════════════════════════════════════════════════════════════
+## 2026-10-03
+
+### Den endelige rejseplan: Ho Chi Minh, Regent Phu Quoc og Azerai
+- **Hvad:** Ny datamigration `20261003120000_ny_plan.sql` (kun data, intet skema). Den fjerner den gamle plan:
+  Hanoi med Aira, Six Senses med Cam Ranh-transport og nytårsmiddag, Holiday Inn og andre hotelkandidater. Den lægger
+  den nye plan ind:
+  - **Ho Chi Minh 27.–30. dec.:** hotel ikke valgt (status idé).
+  - **Regent Phu Quoc 30. dec.–5. jan.:** booket, 6092079.
+  - **Azerai Ke Ga Bay 5.–11. jan.:** booket, 2106044.
+  - **Transport, 6 rækker:** fly ud (DAKEO5), SGN → PQC (ikke booket), PQC → SGN (ikke booket, VJ320 foretrukket),
+    transfer til og fra Azerai, og fly hjem VN033 via München med noten om nedgraderingen.
+  - **Destinationer:** Saigon (HCMC), Phu Quoc (Regent) og Ke Ga (Azerai).
+  `supabase/seed.sql` og `scripts/seed.ts` indeholder nu samme plan, så en ny kørsel ikke bringer den gamle plan
+  tilbage. Drift-testen forventer 3 destinationer, 3 hoteller, 6 transporter og ingen aktiviteter.
+- **Felter uden egen kolonne:** bekræftelsesnumre, rate, check-in, transfer, nytårsprogram, betalingsfrister, adresse,
+  telefon og e-mail står i `description`, som hotelsiden viser. Sengeønskerne står i `room_setup`, afbestilling i
+  `cancellation_note`. Beløbene (VND-totaler, depositum, transferpris) står i `price_note`/`price_dkk`, som appen
+  bevidst ikke viser (beslutningen "Priser fjernet fra appen").
+- **Migrationens adfærd:** Alle hoteller og destinationer uden for den nye plan slettes, også aktiviteter på
+  destinationer, der udgår. Transport erstattes helt. Azerai opdateres i stedet for at blive genskabt, så en placering
+  sat i appen bevares. Den kan køres flere gange, og en afsluttende kontrol ruller alt tilbage, hvis resultatet ikke er
+  præcis 3 destinationer, 3 hoteller og 6 transporter.
+- **Forkastet:** at tilføje kolonner til bekræftelsesnummer, adresse og kontakt (opgaven sagde nej til skemaændringer).
+  At gøre "Hotel i Ho Chi Minh City" til ingenting: et ophold med status idé holder tidslinjen og dag-fliserne
+  27.–29. dec. på plads, og det kan omdøbes i appen, når hotellet er valgt.
+- **Verificeret** i en midlertidig Postgres 16 med init, den gamle seed, rolle-migrationen og typiske app-rettelser
+  (Azerai-placering, en Hanoi-aktivitet, en Saigon-aktivitet og et ekstra kandidathotel):
+  - Migrationen fjernede alt gammelt og bevarede Saigon-aktiviteten og Azerai-placeringen. Anden kørsel ændrede intet.
+    Resultatet var identisk i alle datakolonner med en frisk database seedet med den nye `seed.sql`.
+  - I appen viste tidslinjen 3 blokke i datoorden (3/6/6 nætter) og 6 transport-etiketter. Dag-fliserne gik fra søn
+    27. dec. til man 11. jan. Hotelsiderne viste bekræftelsesnumre, betaling og afbestilling, og ingen tekst fra den
+    gamle plan stod nogen steder (også title-tekster).
+  - Kortet kunne ikke ses uden Google-nøgle i sandkassen.
+- **Også:** stedsøgningens eksempel "Hoa Lo Prison" (Hanoi) er skiftet til "Ben Thanh Market" i UI og README.
+
 ## 2026-09-29
 
 ### Ingen dag-flise for rejsens første dag (flyet ud)

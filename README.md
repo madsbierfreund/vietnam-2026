@@ -16,8 +16,9 @@ brugere (Mads og Marie); alt er delt, og alle kan læse, tilføje, rette og slet
 
 - `supabase/migrations/20260929120000_init.sql` — hele skemaet: `destinations`, `stays`, `transport`, `activities` + RLS
 - `supabase/migrations/20260929130000_roller.sql` — roller: `profiles`, `kan_redigere()`, trigger for nye brugere, RLS hvor kun redaktører må skrive
+- `supabase/migrations/20261003120000_ny_plan.sql` — kun data: skifter en database med den gamle plan (Hanoi, Six Senses) til den endelige plan (Ho Chi Minh, Regent Phu Quoc, Azerai)
 - `supabase/seed.sql` — idempotent seed af den nuværende plan til Supabase SQL Editor (den primære vej)
-- `scripts/seed.ts` — samme seed som script (`npm run seed`), til hvis man kører lokalt. `src/lib/seed.test.ts` sikrer, at de to indeholder de samme hoteller, transporter og aktiviteter
+- `scripts/seed.ts` — samme seed som script (`npm run seed`), til hvis man kører lokalt. `src/lib/seed.test.ts` sikrer, at de to indeholder de samme destinationer, hoteller og transporter
 - `src/proxy.ts`, `src/lib/supabase/*` — session og login-beskyttelse (alt undtagen `/login` kræver login)
 - `src/lib/rolle.ts`, `src/lib/adgang.ts` — roller (redaktør/læser) og opslag af den indloggede brugers rolle
 - `src/lib/trip/*` — ren logik uden UI: datoer og nætter, tidslinjens geometri, nærmeste destination, ruten, aktivitetslister (testet i `trip.test.ts`)
@@ -51,7 +52,7 @@ Den opretter tabellerne og adgangsreglerne. Den må kun køres én gang (en ny k
 
 Åbn **SQL Editor → New query**, kopiér HELE indholdet af `supabase/seed.sql` ind, og tryk **Run**.
 
-- Den indsætter destinationer, hoteller (uden koordinater), transport og nytårsmiddagen i én transaktion. Fejler noget, indsættes intet.
+- Den indsætter den endelige plan: destinationer (Ho Chi Minh, Phu Quoc, Ke Ga), hoteller (uden koordinater) og transport, i én transaktion. Fejler noget, indsættes intet.
 - Den er idempotent: en post, der allerede findes, springes over og røres ikke. Det gælder samme navn, for transport samme dato/type/fra/til, og for aktiviteter samme destination + titel. Den kan altså køres igen uden dubletter, og rettelser I har lavet i appen (fx placeringer) overskrives aldrig.
 - Til sidst kontrollerer den, at hele planen findes, og skriver "Seed færdig …". Står der `relation "public.destinations" does not exist`, er migrationen (trin 2) ikke kørt.
 
@@ -64,6 +65,14 @@ Den opretter tabellerne og adgangsreglerne. Den må kun køres én gang (en ny k
 - Den opretter `profiles` og giver eksisterende brugere en rolle: `madsbierfreund@gmail.com` og `marie.vedsted@gmail.com` bliver **redaktør**, alle andre **læser**.
 - Findes en af de to e-mails ikke endnu, skriver den en notice med e-mailen, men fejler ikke. Opret så brugeren og sæt rollen til `redaktør` i Table Editor (se "Brugere og roller" nedenfor).
 - Herefter må kun redaktører oprette, rette og slette. Alle indloggede kan se alt.
+
+### 4c. Opdatér en eksisterende database til den endelige plan
+
+Har databasen den gamle plan (Hanoi, Six Senses, Holiday Inn), så åbn **SQL Editor → New query**, kopiér HELE indholdet af `supabase/migrations/20261003120000_ny_plan.sql` ind, og tryk **Run**.
+
+- Den fjerner den gamle plan (også aktiviteter på de destinationer, der udgår) og lægger den endelige plan ind. Transport erstattes helt.
+- Den kan køres igen uden at ændre resultatet, og den bevarer placeringen på Azerai.
+- Den skriver "Ny plan er lagt ind …". Ellers ruller den alt tilbage med en fejl, der siger, hvad der mangler.
 
 ### 5. Google Cloud
 
@@ -123,4 +132,4 @@ En bruger uden række i `profiles` behandles som læser. Rollen håndhæves i ap
 
 ## Placeringer
 
-Placeringer sættes kun med Places-søgning: man søger (fx "Hoa Lo Prison") og vælger et resultat, og appen gemmer `lat`, `lng`, `google_place_id` og `google_maps_url`. Man kan ikke taste koordinater ind. Hoteller og aktiviteter uden placering står under kortet som "Mangler placering" med en knap, der åbner søgningen.
+Placeringer sættes kun med Places-søgning: man søger (fx "Ben Thanh Market") og vælger et resultat, og appen gemmer `lat`, `lng`, `google_place_id` og `google_maps_url`. Man kan ikke taste koordinater ind. Hoteller og aktiviteter uden placering står under kortet som "Mangler placering" med en knap, der åbner søgningen.
